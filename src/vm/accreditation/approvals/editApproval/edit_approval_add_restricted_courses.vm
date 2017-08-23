@@ -126,7 +126,7 @@
                         #elseif($context.courseGroupTree.size()<=0)
                         <div class="result_blank">$brander.getBrandElement("lms.searchLearner.caption.noRecordFound") </div>
                         #else
-                        #treeCourseGroupAddCourseInContract(${context.courseGroupTree} ${context.selectedCourses} ${context.callMacroForChildren} $nullTool $brander)
+                        #edit_approval_add_restricted_courses_treeview_of_restricted_courses_by_coursegroup(${context.courseGroupTree} ${context.selectedCourses} ${context.callMacroForChildren} $nullTool $brander)
                         #end
                   </div>
                </div>
@@ -174,7 +174,7 @@
         </div>
    </body>
 </html>
- #macro( treeCourseGroupAddCourseInContract $treeNodes $selectedCourses $callMacroForChildren $nullTool $brander)
+ #macro( edit_approval_add_restricted_courses_treeview_of_restricted_courses_by_coursegroup $treeNodes $selectedCourses $callMacroForChildren $nullTool $brander)
    #set($currentRowIndex = 1)
    #set($lastDepth = 0)
    #set($arrParent = [])  
@@ -249,12 +249,12 @@
             #else
             #set ($nodeDepth = 1)
         #end
-   #treeCourseAddCourseInContract($node.value.courses $rowColor ${node.value.id} $currentRowIndex $nodeDepth $selectedCourses $nullTool $brander)
+   #edit_approval_add_restricted_courses_treeview_of_restricted_courses_by_course($node.value.courses $rowColor ${node.value.id} $currentRowIndex $nodeDepth $selectedCourses $nullTool $brander)
    #end                 
    #end
    #end
    #end
-   #macro( treeCourseAddCourseInContract $courses $rowColor $parentId $rowIndex $nodeDepth $selectedCourses $nullTool $brander)
+   #macro( edit_approval_add_restricted_courses_treeview_of_restricted_courses_by_course $courses $rowColor $parentId $rowIndex $nodeDepth $selectedCourses $nullTool $brander)
    #set($childRowNamePrefix='childOf:')	
    #set ($currentRowDivName = "$childRowNamePrefix$parentId")
    #foreach($course in $courses)

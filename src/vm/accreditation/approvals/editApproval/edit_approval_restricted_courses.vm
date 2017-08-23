@@ -210,7 +210,7 @@
                               </tr>
                            </table>
                         </div>
-                        #treeManageCourseGroupOWS (${context.coursesTreeAsList} $nullTool $brander)
+                        #edit_approval_restricted_courses_treeview_of_restricted_courses_by_coursegroup (${context.coursesTreeAsList} $nullTool $brander)
                      </div>
                      <div class="manage-bottom-space"></div>
                      <div class="managerBtn">
@@ -290,7 +290,7 @@
 </div>
 </body>
 </html>
-#macro( treeManageCourseGroupOWS $treeNodes $nullTool $brander)
+#macro( edit_approval_restricted_courses_treeview_of_restricted_courses_by_coursegroup $treeNodes $nullTool $brander)
     #set($currentRowIndex = 1)
     #set($lastDepth = 0)
     #set($arrParent = [])   
