@@ -59,6 +59,7 @@ import com.softech.vu360.lms.model.Regulator;
 import com.softech.vu360.lms.model.RegulatorCategory;
 import com.softech.vu360.lms.model.RegulatoryAnalyst;
 import com.softech.vu360.lms.model.RegulatoryApproval;
+import com.softech.vu360.lms.model.RestrictedCourse;
 import com.softech.vu360.lms.model.SingleSelectCreditReportingField;
 import com.softech.vu360.lms.model.SingleSelectCustomField;
 import com.softech.vu360.lms.model.StaticCreditReportingField;
@@ -97,6 +98,7 @@ import com.softech.vu360.lms.repositories.RegulatorCategoryRepository;
 import com.softech.vu360.lms.repositories.RegulatorRepository;
 import com.softech.vu360.lms.repositories.RegulatoryAnalystRepository;
 import com.softech.vu360.lms.repositories.RegulatoryApprovalRepository;
+import com.softech.vu360.lms.repositories.RestrictedCourseRepository;
 import com.softech.vu360.lms.repositories.ValidationQuestionRepository;
 import com.softech.vu360.lms.service.AccreditationService;
 import com.softech.vu360.lms.service.VU360UserService;
@@ -191,6 +193,8 @@ public class AccreditationServiceImpl implements AccreditationService {
 	ValidationQuestionRepository validationQuestionRepository;
 	@Inject
 	LanguageRepository languageRepository;
+        @Inject
+	RestrictedCourseRepository restrictedCourseRepository;
 	
 	private static final Logger log = Logger
 			.getLogger(AccreditationServiceImpl.class.getName());
@@ -2304,5 +2308,15 @@ public class AccreditationServiceImpl implements AccreditationService {
     @Override
     public List<PurchaseCertificateNumber> checkPurchaseNumbersByCourseApproval(CourseApproval courseApproval, List<String> purchaseCertificateNumbers) {
         return purchaseCertificateNumberRepository.findByCourseApprovalAndCertificateNumberIn(courseApproval, purchaseCertificateNumbers);
+    }
+    
+    @Override
+    public void saveRestrictedCourses(Set<RestrictedCourse> restrictedCourses) {
+        restrictedCourseRepository.save(restrictedCourses);
+    }
+    
+    @Override
+    public void deleteRestrictedCourses(Set<RestrictedCourse> restrictedCourses) {
+        restrictedCourseRepository.delete(restrictedCourses);
     }
 }

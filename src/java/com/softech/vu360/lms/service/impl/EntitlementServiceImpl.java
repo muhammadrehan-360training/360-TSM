@@ -55,6 +55,7 @@ import com.softech.vu360.lms.model.LearnerSCOStatistics;
 import com.softech.vu360.lms.model.LearnerSelfStudyCourseActivity;
 import com.softech.vu360.lms.model.OrgGroupEntitlement;
 import com.softech.vu360.lms.model.OrganizationalGroup;
+import com.softech.vu360.lms.model.RestrictedCourse;
 import com.softech.vu360.lms.model.SubscriptionCourse;
 import com.softech.vu360.lms.model.SubscriptionCustomerEntitlement;
 import com.softech.vu360.lms.model.SynchronousClass;
@@ -62,7 +63,6 @@ import com.softech.vu360.lms.model.SynchronousCourse;
 import com.softech.vu360.lms.model.TrainingPlanAssignment;
 import com.softech.vu360.lms.model.TrainingPlanCourse;
 import com.softech.vu360.lms.model.TrainingPlanCourseView;
-import com.softech.vu360.lms.model.VU360User;
 import com.softech.vu360.lms.model.WebinarCourse;
 import com.softech.vu360.lms.repositories.CourseCustomerEntitlementItemRepository;
 import com.softech.vu360.lms.repositories.CourseCustomerEntitlementRepository;
@@ -2623,6 +2623,62 @@ public class EntitlementServiceImpl implements EntitlementService {
 		}
 
 		return treeNodesList;
+	}
+        
+        public List<TreeNode> getTreeForContract(Set<RestrictedCourse> restrictedCourses) {
+
+            List<TreeNode> treeNodesList;
+            List<TreeNode> rootNodesReferences;
+            TreeNode courseGroupCourseTreeNode;
+
+            treeNodesList = new ArrayList<>();
+            rootNodesReferences = new ArrayList<>();
+            courseGroupCourseTreeNode = null;
+
+            for (RestrictedCourse restrictedCourse : restrictedCourses) {
+                Course course = restrictedCourse.getCourse();
+                CourseGroup courseGroup = restrictedCourse.getCourseGroup();
+                if (courseGroup == null) {
+                    courseGroup = new CourseGroup();
+                    java.util.Date date = new java.util.Date();
+                    courseGroup.setId(new Long((date.getHours() + date.getMinutes() + date.getSeconds()) * 100));
+                    courseGroup.setName("Miscellaneous");
+                }
+
+                boolean courseAdded = false;
+                for (TreeNode rootTreeNode : rootNodesReferences) {
+                    List<CourseGroup> childCourseGroups = new ArrayList<>();
+                    if (ArrangeCourseGroupTree.traverseTreeToAddCourse(rootTreeNode, courseGroup, course, childCourseGroups)) {
+                        courseAdded = true;
+                        break;
+                    }
+
+                    CourseGroup currentCourseGroup = courseGroup;
+                    while (!courseAdded && currentCourseGroup.getParentCourseGroup() != null) {
+                        CourseGroup parentCourseGroup = currentCourseGroup.getParentCourseGroup();
+                        childCourseGroups.add(currentCourseGroup);
+                        if (ArrangeCourseGroupTree.traverseTreeToAddCourse(rootTreeNode, parentCourseGroup, course, childCourseGroups)) {
+                            courseAdded = true;
+                            break;
+                        }
+                        currentCourseGroup = parentCourseGroup;
+                    }
+
+                    if (courseAdded) {
+                        break;
+                    }
+                }
+                if (!courseAdded) {
+                    courseGroupCourseTreeNode = ArrangeCourseGroupTree.getCourseGroupTreeNodeForCourse(courseGroup, course);
+                    rootNodesReferences.add(courseGroupCourseTreeNode);
+                }
+            }
+
+            rootNodesReferences.forEach((rootTreeNode) -> {
+                treeNodesList.addAll(rootTreeNode.bfs());
+            });
+
+            return treeNodesList;
 	}
 
 	private boolean isCoursePresentInTree(List<TreeNode> treeNodesList, Course course) {

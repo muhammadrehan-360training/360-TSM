@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      #parse("snippets/learnerNewHead.vm")
+      <link rel="stylesheet" type="text/css" href="brands/default/en/css/css_orgGroup-tree.css"/>
+      <script type="text/javascript" language="javascript" src="javascript/js_manager.js"></script>
+      <script type="text/javascript" src="javascript/ui.datepicker.js"></script>  
+      <script src="javascript/360js.js" language="javascript" type="text/javascript" ></script>	
+      <script type='text/javascript' src='javascript/jquery.simplemodal.js'></script>
+      <script type="text/javascript" language="javascript" src="javascript/tree_collapseExpand.js"></script>
+      <script type="text/javascript" language="javascript">
+         function FormSubmitNew(buttonclick) {
+            document.searchCoursesForm.elements["action"].value=buttonclick;
+            document.searchCoursesForm.submit();
+        }
+         
+        function cancelInformation() {
+            document.addCourses.elements["method"].value = 'showRestrictedCourses';
+            document.addCourses.submit();
+        }
+        
+        function submitButtonForm() {
+            if($("INPUT[type='checkbox'][name='courses']:checked").length > 0) {
+                document.addCourses.elements["method"].value='addSelectedRestrictedCourses';
+                document.addCourses.submit();
+            } else {
+               $('#warning').modal({close:false,position: ["40%",]});
+            }
+        }
+         
+        $(document).ready(function() {
+            $('#content2a').scroll(function() {
+                $('#message_box').animate({top:$('#content2a').scrollTop()+"px" },{queue: false, duration: 350});  
+            });
+            $('#close_message').click(function() {
+                $('#message_box').animate({ top:"+=15px",opacity:0 }, "slow");
+            });
+         });
+      </script> 
+   </head>
+   <body>
+      <table id="table-layout" border="0" cellpadding="0" cellspacing="0">
+         <tr>
+            <td id="header" border="0" cellpadding="0" cellspacing="0" colspan="2">
+               #parse("snippets/adminWizardHeader.vm")
+            </td>
+         </tr>
+         <tr id="main">
+            <td id="left-navigation" valign="top" style="width:195px;">
+               <table id="table-bands" border="0" cellpadding="0" cellspacing="0">
+                  <div>
+                     <div id="l-menu-back">
+                        <div class="l-menu-back-text-h">Add Add Restricted Courses Wizard Showing 1 of 1</div>
+                        <div class="l-menu-back-text-act">1. Add Restricted Courses</div>
+                     </div>
+                  </div>
+               </table>
+            </td>
+            <TD id="content" >
+               <div id="scrollable">
+                #if($context.error)
+                  <div id="message_box">
+                    <img id="close_message" style="float:right;cursor:pointer"  src="$brander.getBrandElement("lms.errorMessage.pixel.12-em-cross.png")" />
+                    #foreach($errorCode in $context.error)
+                        #set ($error = $brander.getBrandElement($errorCode))
+                        <div class="$brander.getBrandElement("lms.administrator.adddistributorentitlement.cssClass.width40pct")">
+                        <div class="$brander.getBrandElement("lms.administrator.adddistributorentitlement.cssClass.message_box_align")"><img src="$brander.getBrandElement("lms.errorMessage.pixel.addLearner_06.gif")" width="14" height="14" alt="" /></div>
+                        <div class="$brander.getBrandElement("lms.administrator.adddistributorentitlement.cssClass.message_box_align")">$error</div>
+                    </div>
+                     #end
+               </div>
+               #end
+               <div class="page_description" id="pageDescription">
+                  <div class="courseLogoCustomer" id="pageIcon"></div>
+                  <div class="page_heading" id="pageHeading">Add Restricted Courses</div>
+                  <div id="pageDescriptionText">Add Restricted Courses Description</div>
+               </div>
+               <div id="resultBox" class="content-Block-new">
+                  <div id="searchBox" class="visible" style="height:210px;">
+                     <form name="searchCoursesForm" id="restrictedCoursesForm" method="post" action="acc_manageApproval.do">
+                        <div style="padding: 5px">$brander.getBrandElement("lms.manageUser.searchLearner.caption.searchUsers")</div>
+                        <div style="padding: 5px">
+                           <div style="width:75px; float:left">Course Name </div>
+                           <div style="float:left"><input type="text" onKeyPress="if(event.keyCode==13){FormSubmitNew('advanceSearch');}" name="title" value="$!{context.title}" style="font-size:9px; width:170px" class="search_field" /></div>
+                           <br style="clear:both" />
+                        </div>
+                        <div style="padding: 5px">
+                           <div style="width:75px; float:left">Course ID </div>
+                           <div style="float:left"><input type="text" onKeyPress="if(event.keyCode==13){FormSubmitNew('advanceSearch');}" name="courseId" value="$!{context.courseId}" style="font-size:9px; width:170px" class="search_field" /></div>
+                           <br style="clear:both" />
+                        </div>
+                        <div style="padding: 5px">
+                           <div style="width:75px; float:left">Keywords </div>
+                           <div style="float:left"><input type="text" onKeyPress="if(event.keyCode==13){FormSubmitNew('advanceSearch');}"  name="keywords"value="$!{context.keywords}" style="font-size:9px; width:170px" class="search_field" /></div>
+                           <br style="clear:both" />
+                        </div>
+                        <div style="padding: 5px;margin-left:40px;margin-right:40px;height:20px">
+                           <a class="button" onClick="showSearchBox(this);"><span class="button">Cancel</span></a>
+                           <a class="button" onClick="return FormSubmitNew('advanceSearch');"><span class="button">Search</span></a>
+                        </div>
+                        <input id="action" type="hidden" name="action" value="advanceSearch" />
+                        <input id="direction" type="hidden" name="direction" value="prev" />
+                        <input id="method" type="hidden" name="method" value="searchCourseGroups" />
+                        <input id="pageIndex" type="hidden" name="pageIndex" value="0" />
+                     </form>
+                  </div>
+                  <div id="resultHeader" class="box_header">
+                    <div class="result_left_side">
+                       <div style="float:left; margin-top:2px;">
+                          <a onClick="showSearchBox(document.getElementById('srch'));" style="text-decoration:none;">
+                             <div class="btn_start"></div>
+                             <div class="btn_normal">Search</div>
+                             <div class="btn_end"></div>
+                          </a>
+                       </div>
+                       #set($lPpageNum =$!{context.pageNo} *10 + 1)
+                       #set($rPpageNum =$!{context.recordShowing})
+                       <div id="resultDescription" class="box_description">Showing #if($!{context.totalRecord}<=0) 0 - 0 of 0 #else $lPpageNum - $rPpageNum of $!{context.totalRecord} #end</div>
+                    </div>
+                </div>
+                  <div class="search_box_result" style="margin-left:0px;padding:0px;border-right:0px">
+                     <form name="addCourses" method="post" action="acc_manageApproval.do" >
+                        <input type="hidden" id="method" name="method" value="addSelectedRestrictedCourses"/>  
+                        #if(!${context.courseGroupTree})
+                        <div class="result_blank">Please click on the search button to refine search.</div>
+                        #elseif($context.courseGroupTree.size()<=0)
+                        <div class="result_blank">$brander.getBrandElement("lms.searchLearner.caption.noRecordFound") </div>
+                        #else
+                        #treeCourseGroupAddCourseInContract(${context.courseGroupTree} ${context.selectedCourses} ${context.callMacroForChildren} $nullTool $brander)
+                        #end
+                  </div>
+               </div>
+               <div class="$brander.getBrandElement("lms.manageUser.addNewLearner.cssClass.manager-bottom-space")"></div>
+               <div class="$brander.getBrandElement("lms.manageUser.addNewLearner.cssClass.managerBtn")">
+               <input type="hidden" id="currentpage" name="_page" value="0"/>
+               <div style="float:right; margin-top:3px;">
+               <a onClick="submitButtonForm();" style="text-decoration:none;">
+               <div class="btn_start"></div>
+               <div class="btn_normal">Finish</div>
+               <div class="btn_end"></div>
+               </a>
+               </div>
+               <div style="float:right; margin-top:3px;margin-right:5px;">
+               <a onClick="cancelInformation();" style="text-decoration:none;">
+               <div class="btn_start"></div>
+               <div class="btn_normal">Cancel</div>
+               <div class="btn_end"></div>
+               </a>
+               </div>
+               </div>
+               <input type="hidden" id="wizardSubmitter" name="wizardSubmitter" />			
+               <div class="$brander.getBrandElement("lms.manageUser.addNewLearner.cssClass.manager-bottom-space")"></div>
+               </div>
+            </td>
+         </tr>
+         <tr>
+         <td id="footer" colspan="2">
+         #parse("snippets/adminFooter.vm")
+         </td></tr>
+      </table>
+      </form>
+        <div id="warning" style="display:none">
+            <div class="header">$brander.getBrandElement("lms.accraditation.editApproval.restrictedCourses.messageBox.warning")</div>
+            <div class="alert_message_box_icon"></div>
+            <div class="alert_message_box_text">$brander.getBrandElement("lms.accraditation.editApproval.restrictedCourses.messageBox.select")</div>
+            <br style="clear:both" />
+            <div class='buttons'>
+                    <div class='no simplemodal-close'>
+            <a class="button" onClick="">
+                                    <span class="button">$brander.getBrandElement("lms.accraditation.editApproval.restrictedCourses.messageBox.OK")</span>
+                            </a>
+                    </div>
+            </div>
+        </div>
+   </body>
+</html>
+ #macro( treeCourseGroupAddCourseInContract $treeNodes $selectedCourses $callMacroForChildren $nullTool $brander)
+   #set($currentRowIndex = 1)
+   #set($lastDepth = 0)
+   #set($arrParent = [])  
+   #if (!$nullTool.isNull($treeNodes) && $treeNodes.size() > 0)
+    <div class="User-checkbox-row-d2">
+       <div class="User-checkbox-row-d2a">Course</div>
+       <div class="head_1b-e">Course Id</div>
+    </div>
+   #end
+   #foreach($node in $treeNodes)
+    #if(!$nullTool.isNull(${node.depth}))
+        #set($depthDiff = ${node.depth} - ${lastDepth})
+    #else
+        #set($depthDiff = ${lastDepth})
+   #end
+   #set ($var=$currentRowIndex%2)
+   #if ($!{var}==0)
+        #set ($rowColor="org_row2")
+   #else 
+        #set ($rowColor="org_row1")
+   #end
+   #set ($val=0)		
+   $arrParent.add($node.depth,$node.value.id)
+   #if (!$nullTool.isNull(${node.depth}) && ${node.depth}>0)
+        #set ($val=$node.depth - 1)
+        #set($parentId=$arrParent.get($val))
+        #set($currentRowName='childOf:')
+        #set ($currentRowDivName = "$currentRowName$parentId")
+   #else
+        #set($parentId='')
+        #set($currentRowDivName=$node.value.id)
+   #end
+   <div style="height:21px;" id="row$currentRowIndex" name="row$currentRowIndex" class="$rowColor" indx="$currentRowIndex" parentRef="$!{parentId}">
+      <input type="hidden" name="$currentRowDivName" value="" />
+      <div class="icon_blank">&nbsp;</div>
+      #if(!$nullTool.isNull(${node.depth}))
+        #foreach($i in [1..${node.depth}])
+          #if (${node.depth}>0)
+              <div class="icon_blank2"></div>
+          #end
+        #end
+      #end
+      #if(${node.isLeaf()} && $callMacroForChildren == "false")
+        <div id="divIcon$currentRowIndex" class="icon_collapse_list" iscollapsed="false" parentRef="$!{parentId}"></div>
+      #else     
+        <div id="divIcon$currentRowIndex" class="icon_collapse" onclick="collapseExpandTreeNode(this);" nodeid="${node.value.id}">
+      </div>
+      #end
+      #if(${node.isLeaf()} && $callMacroForChildren == "false")
+        <div class="org_checkbox">
+           <input type="checkbox" id="course_$!{parentId}_${node.value.id}" name="courses" value="$!{parentId}:${node.value.id}" />
+        </div>
+      #end
+      <div class="row_title">
+         #if(${node.isLeaf()} && $callMacroForChildren == "false")
+            <img src="$brander.getBrandElement("lms.administrator.manageEntitlementGroup.course.iconCourse.png")" />&nbsp;$!{node.value.courseTitle}
+         #else            	
+            <img src="$brander.getBrandElement("lms.administrator.manageEntitlementGroup.courseGroup.iconCourseGroup.png")" />&nbsp;$!{node.value.name}
+         #end
+      </div>
+      <div class="head_1b-e-1">
+         #if(${node.isLeaf()} && !$nullTool.isNull($node.value.bussinesskey))
+            $!{node.value.bussinesskey}
+         #end	
+      </div>
+   </div>
+   #set ($currentRowIndex = $currentRowIndex + 1)
+   #if($callMacroForChildren == "true")
+        #if(${node.value.courses.size()} > 0)  
+            #if(!$nullTool.isNull(${node.depth}))
+                #set ($nodeDepth = ${node.depth} + 1)
+            #else
+            #set ($nodeDepth = 1)
+        #end
+   #treeCourseAddCourseInContract($node.value.courses $rowColor ${node.value.id} $currentRowIndex $nodeDepth $selectedCourses $nullTool $brander)
+   #end                 
+   #end
+   #end
+   #end
+   #macro( treeCourseAddCourseInContract $courses $rowColor $parentId $rowIndex $nodeDepth $selectedCourses $nullTool $brander)
+   #set($childRowNamePrefix='childOf:')	
+   #set ($currentRowDivName = "$childRowNamePrefix$parentId")
+   #foreach($course in $courses)
+   #if($course.courseStatus == "Published" || $course.courseStatus == "published")
+   #if(${rowColor} == "org_row2")
+   #set ($rowColor = "org_row1")
+   #else
+   #set ($rowColor = "org_row2")
+   #end
+   <div id="row${rowIndex}" name="row${rowIndex}" class="${rowColor}" indx="${rowIndex}" parentRef="$!{parentId}">
+      <input type="hidden" name="$currentRowDivName" value="" />
+      <div class="icon_blank">&nbsp;</div>
+      #foreach($i in [1..${nodeDepth}])
+      #if ($!{nodeDepth}>0)
+      <div class="icon_blank2"></div>
+      #end
+      #end
+      <div id="divIcon$rowIndex" class="icon_collapse_list" iscollapsed="false" parentRef="$!{parentId}"></div>
+      <div class="org_checkbox">
+         <input type="checkbox" id="course_${parentId}_${course.id}" name="courses" value="$!{parentId}:${course.id}" />
+      </div>
+      <div class="row_title">
+         <img src="$brander.getBrandElement("lms.administrator.manageEntitlementGroup.course.iconCourse.png")" />&nbsp;$!{course.courseTitle}
+      </div>
+      <div class="head_1b-e-1">
+         #if(!$nullTool.isNull($course.bussinesskey))
+         $!{course.bussinesskey}
+         #end
+      </div>
+   </div>
+   #set ($rowIndex = $rowIndex + 1)
+   #end
+   #end	
+   #end

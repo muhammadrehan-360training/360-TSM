@@ -1,5 +1,6 @@
 package com.softech.vu360.lms.web.controller.accreditation;
 
+import com.softech.vu360.lms.model.Course;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,17 +22,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMethodException;
 
 import com.softech.vu360.lms.model.CourseApproval;
+import com.softech.vu360.lms.model.CourseGroup;
+import com.softech.vu360.lms.model.RestrictedCourse;
 import com.softech.vu360.lms.model.Credential;
 import com.softech.vu360.lms.model.CredentialCategoryRequirement;
 import com.softech.vu360.lms.model.CustomField;
 import com.softech.vu360.lms.model.CustomFieldValue;
 import com.softech.vu360.lms.model.CustomFieldValueChoice;
+import com.softech.vu360.lms.model.Customer;
 import com.softech.vu360.lms.model.DateTimeCustomField;
 import com.softech.vu360.lms.model.Document;
 import com.softech.vu360.lms.model.InstructorApproval;
@@ -46,8 +49,9 @@ import com.softech.vu360.lms.model.RegulatoryApproval;
 import com.softech.vu360.lms.model.SSNCustomFiled;
 import com.softech.vu360.lms.model.SingleLineTextCustomFiled;
 import com.softech.vu360.lms.model.SingleSelectCustomField;
-import com.softech.vu360.lms.model.VU360User;
 import com.softech.vu360.lms.service.AccreditationService;
+import com.softech.vu360.lms.service.CourseAndCourseGroupService;
+import com.softech.vu360.lms.service.EntitlementService;
 import com.softech.vu360.lms.web.controller.VU360BaseMultiActionController;
 import com.softech.vu360.lms.web.controller.model.accreditation.ApprovalCredential;
 import com.softech.vu360.lms.web.controller.model.accreditation.ApprovalForm;
@@ -57,6 +61,7 @@ import com.softech.vu360.lms.web.controller.model.accreditation.ManageApproval;
 import com.softech.vu360.lms.web.controller.model.accreditation.ManageCustomField;
 import com.softech.vu360.lms.web.controller.model.customfield.CustomFieldBuilder;
 import com.softech.vu360.lms.web.controller.validator.Accreditation.EditApprovalValidator;
+import com.softech.vu360.lms.web.filter.VU360UserAuthenticationDetails;
 import com.softech.vu360.lms.webservice.client.LCMSClientWS;
 import com.softech.vu360.lms.webservice.client.LMSCourseApprovalPublishWSClient;
 import com.softech.vu360.util.CustomFieldEntityType;
@@ -67,7 +72,10 @@ import com.softech.vu360.util.HtmlEncoder;
 import com.softech.vu360.util.ManageApprovalSort;
 import com.softech.vu360.util.PurchaseCertificateNumberSort;
 import com.softech.vu360.util.RegulatorSort;
+import com.softech.vu360.util.TreeNode;
 import com.softech.vu360.util.VU360Properties;
+import java.util.Arrays;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * 
@@ -77,57 +85,65 @@ import com.softech.vu360.util.VU360Properties;
 @SuppressWarnings("all")
 public class ManageAndEditApprovalController extends VU360BaseMultiActionController {
 
-	private static final Logger log = Logger.getLogger(ManageAndEditApprovalController.class.getName());
+    private static final Logger log = Logger.getLogger(ManageAndEditApprovalController.class.getName());
 
-	public static final String COURSE_APPROVAL = "Course Approval";
-	public static final String PROVIDER_APPROVAL = "Provider Approval";
-	public static final String INSTRUCTOR_APPROVAL = "Instructor Approval";
-	public static final String ALL = "All";
+    public static final String COURSE_APPROVAL = "Course Approval";
+    public static final String PROVIDER_APPROVAL = "Provider Approval";
+    public static final String INSTRUCTOR_APPROVAL = "Instructor Approval";
+    public static final String ALL = "All";
 
-	public static final String ACTIVE_YES = "Yes";
-	public static final String ACTIVE_NO = "No";
-	
-	
-	public static final String CUSTOMFIELD_ENTITY_COURSEAPPROVAL = "CUSTOMFIELD_COURSEAPPROVAL";
-	public static final String CUSTOMFIELD_ENTITY_PROVIDERAPPROVAL = "CUSTOMFIELD_PROVIDERAPPROVAL";
-	public static final String CUSTOMFIELD_ENTITY_INSTRUCTORAPPROVAL = "CUSTOMFIELD_INSTRUCTORAPPROVAL";
+    public static final String ACTIVE_YES = "Yes";
+    public static final String ACTIVE_NO = "No";
 
-	private AccreditationService accreditationService;
-	private LCMSClientWS lcmsClientWS = null;
-	private LMSCourseApprovalPublishWSClient lmsCourseApprovalClientToSF = null;
-	
-//	HttpSession session = null;
 
-	private String searchApprovalTemplate = null;
-	private String editApprovalDocumentsTemplate = null;
+    public static final String CUSTOMFIELD_ENTITY_COURSEAPPROVAL = "CUSTOMFIELD_COURSEAPPROVAL";
+    public static final String CUSTOMFIELD_ENTITY_PROVIDERAPPROVAL = "CUSTOMFIELD_PROVIDERAPPROVAL";
+    public static final String CUSTOMFIELD_ENTITY_INSTRUCTORAPPROVAL = "CUSTOMFIELD_INSTRUCTORAPPROVAL";
 
-	private String courseApprovalSummaryTemplate = null;
-	private String courseApprovalRegulatorTemplate = null;
-	private String courseApprovalRegulatorCategoryTemplate = null;
-	private String courserApprovalReportingFieldTemplate = null;
-	private String courserApprovalRequirementTemplate = null;
-	private String showCourseApprovalDocumentsTemplate = null;
-	private String courseApprovalCustomFieldTemplate = null;
 
-	private String providerApprovalSummaryTemplate = null;
-	private String providerApprovalRegulatorTemplate = null;
-	private String providerApprovalProviderTemplate = null;
-	private String showProviderApprovalDocumentsTemplate = null;
-	private String providerApprovalCustomFieldTemplate = null;
-	private String courseApprovalPurchasedCertificateTemplate = null;
+    private AccreditationService accreditationService;
+    private EntitlementService entitlementService;
+    private CourseAndCourseGroupService courseAndCourseGroupService;
 
-	private String instructorApprovalSummaryTemplate = null;
-	private String instructorApprovalRegulatorTemplate = null;
-	private String instructorApprovalProviderTemplate = null;
-	private String showInstructorApprovalDocumentsTemplate = null;
-	private String instructorApprovalCustomFieldTemplate = null;
-	private String instructorApprovalInstructorTemplate = null;
-	private String instructorApprovalCourseTemplate = null;
-	private String redirectTemplate = null;
+    private LCMSClientWS lcmsClientWS = null;
+    private LMSCourseApprovalPublishWSClient lmsCourseApprovalClientToSF = null;
+
+    //	HttpSession session = null;
+
+    private String searchApprovalTemplate = null;
+    private String editApprovalDocumentsTemplate = null;
+
+    private String courseApprovalSummaryTemplate = null;
+    private String courseApprovalRegulatorTemplate = null;
+    private String courseApprovalRegulatorCategoryTemplate = null;
+    private String courserApprovalReportingFieldTemplate = null;
+    private String courserApprovalRequirementTemplate = null;
+    private String showCourseApprovalDocumentsTemplate = null;
+    private String courseApprovalCustomFieldTemplate = null;
+
+    private String providerApprovalSummaryTemplate = null;
+    private String providerApprovalRegulatorTemplate = null;
+    private String providerApprovalProviderTemplate = null;
+    private String showProviderApprovalDocumentsTemplate = null;
+    private String providerApprovalCustomFieldTemplate = null;
+    private String courseApprovalPurchasedCertificateTemplate = null;
+
+    private String instructorApprovalSummaryTemplate = null;
+    private String instructorApprovalRegulatorTemplate = null;
+    private String instructorApprovalProviderTemplate = null;
+    private String showInstructorApprovalDocumentsTemplate = null;
+    private String instructorApprovalCustomFieldTemplate = null;
+    private String instructorApprovalInstructorTemplate = null;
+    private String instructorApprovalCourseTemplate = null;
+    private String redirectTemplate = null;
     private String listCreditReportingFieldTemplate= null;
-    
+    private String listRestrictedCoursesTemplate = null;
+
     private String redirectChangeCourse = null;
     private String redirectChangeRegulatorCategory = null;
+    private String addRestrictedCoursesTemplate = null;
+
+    
     
 	public ManageAndEditApprovalController() {
 		super();
@@ -178,14 +194,15 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
 					|| methodName.equals("showCourseApprovalRequirement")
 					|| methodName.equals("showCourseApprovalDocuments")
 					|| methodName.equals("showCourseApprovalPurchasedCertificate")
-					|| methodName.equals("showCourseApprovalCustomField")){
+					|| methodName.equals("showCourseApprovalCustomField")
+                                        || methodName.equals("showRestrictedCourses")){
 
-				CourseApproval courseApproval = accreditationService.loadForUpdateCourseApproval(form.getAppId());
+    				CourseApproval courseApproval = accreditationService.loadForUpdateCourseApproval(form.getAppId());
 				form.setCourseApproval(courseApproval);
-//				form.setRegulatorCategories(this.convertToUiObject(courseApproval.getRegulatorCategories()));
 				form.setPurchaseCertificateNumbers(courseApproval.getPurchaseCertificateNumbers().stream().collect(Collectors.toList()));
 				form.setCertificateNumberGeneratorNextNumberString(courseApproval.getCertificateNumberGeneratorNextNumber() > 0 ? courseApproval.getCertificateNumberGeneratorNextNumber() + "" : "");
 				form.setEntity(ApprovalForm.COURSE_APPROVAL);
+                                form.setRestrictedCourses(courseApproval.getRestrictedCourses());
 				Integer certificateExpirationPeriod = courseApproval.getCertificateExpirationPeriod();
 				if (certificateExpirationPeriod != null && certificateExpirationPeriod != 0) {
 					form.setCertificateExpirationPeriod(String.valueOf(certificateExpirationPeriod));
@@ -1387,7 +1404,196 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
 		return new ModelAndView(courseApprovalPurchasedCertificateTemplate, "context", context);
 	}
 	
+	/**
+	 * This method shows restricted courses
+	 * @param request
+	 * @param response
+	 * @param command
+	 * @param errors
+	 * @return
+	 * @throws Exception
+	 */
+	public ModelAndView showRestrictedCourses( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
+	
+            ApprovalForm form;
+            List<TreeNode> treeAsList;
+            Map<Object, Object> context;
 
+            context = new HashMap<>();
+            
+            form = (ApprovalForm)command;
+            
+            treeAsList = entitlementService.getTreeForContract(form.getRestrictedCourses());
+
+            context.put("coursesTreeAsList", treeAsList);
+            
+            return new ModelAndView(listRestrictedCoursesTemplate, "context", context);
+	}
+        
+        /**
+	 * This method shows restricted courses
+	 * @param request
+	 * @param response
+	 * @param command
+	 * @param errors
+	 * @return
+	 * @throws Exception
+	 */
+	public ModelAndView showUnsavedRestrictedCourses( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
+	
+            ApprovalForm form;
+            List<TreeNode> treeAsList;
+            Map<Object, Object> context;
+
+            context = new HashMap<>();
+            
+            form = (ApprovalForm)command;
+            
+            treeAsList = entitlementService.getTreeForContract(form.getRestrictedCourses());
+
+            context.put("coursesTreeAsList", treeAsList);
+            
+            return new ModelAndView(listRestrictedCoursesTemplate, "context", context);
+	}
+
+        public ModelAndView addRestrictedCourses( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
+            
+            Map<String, Object> context;
+            
+            context = new HashMap<>();
+            
+            context.put("pageNo",0);
+            context.put("totalRecord", 0);
+            context.put("recordShowing", 0);
+            
+            return new ModelAndView(addRestrictedCoursesTemplate, "context", context);
+        }
+        
+        public ModelAndView searchCourseGroups( HttpServletRequest request, HttpServletResponse response,
+			Object command, BindException errors) throws Exception{
+
+            Customer customer;
+            Map<String, Object> context;
+            List<TreeNode> courseGroupTree;
+            
+            Long[] resellerCourseGroupIDs;
+            List<Long> resellerCourseGroupIds;
+            
+            String keywords;
+            String title;
+            String entityId;
+            
+            entityId = null;
+            
+            keywords = request.getParameter("keywords");
+            title = request.getParameter("title");
+            
+            context = new HashMap<>();
+            
+            if (request.getParameter("courseId") != null) {
+                entityId = request.getParameter("courseId");
+            } else if (request.getParameter("courseGroupID") != null) {
+                entityId = request.getParameter("courseGroupID");
+            }
+            
+            customer = ((VU360UserAuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails()).getCurrentCustomer();
+            courseGroupTree = entitlementService.getEntitlementCourseGroupTreeNode(null, title.trim(), entityId, keywords.trim(), "Course", context, customer);
+            resellerCourseGroupIDs = entitlementService.getCourseGroupIDArrayForDistributor(customer.getDistributor());
+            resellerCourseGroupIds = Arrays.asList(resellerCourseGroupIDs);
+            
+            
+            context.put("resellerCourseGroupIds", resellerCourseGroupIds);
+            context.put("courseGroupTree", courseGroupTree);
+            
+            if (courseGroupTree == null) {
+                String[] error = {"error.admin.customerEnt.course.errorMsg1",
+                    "error.admin.customerEnt.course.errorMsg2",
+                    "error.admin.customerEnt.course.errorMsg3"};
+                context.put("error", error);
+            }
+            context.put("pageNo",0);
+            context.put("totalRecord", courseGroupTree.size());
+            context.put("recordShowing", courseGroupTree.size());
+            
+            return new ModelAndView(addRestrictedCoursesTemplate, "context", context);
+	}
+        
+        public ModelAndView addSelectedRestrictedCourses(HttpServletRequest request, HttpServletResponse response,
+            Object command, BindException errors) throws Exception {
+
+            ApprovalForm form;
+            String[] selectedRestrictedCourseIds;
+
+            form = (ApprovalForm) command;
+            selectedRestrictedCourseIds = request.getParameterValues("courses");
+
+            if(selectedRestrictedCourseIds != null && selectedRestrictedCourseIds.length > 0) {
+                for (String courseId : selectedRestrictedCourseIds) {
+
+                    String[] value = courseId.split(":");
+
+                    CourseGroup courseGroup = courseAndCourseGroupService.getCourseGroupById(Long.valueOf(value[0]));
+                    Course course = courseAndCourseGroupService.getCourseById(Long.valueOf(value[1]));
+
+                    RestrictedCourse restrictedCourse = new RestrictedCourse();
+                    restrictedCourse.setCourseApproval(form.getCourseApproval());
+                    restrictedCourse.setCourse(course);
+                    restrictedCourse.setCourseGroup(courseGroup);
+
+                    if(!form.getRestrictedCourses().contains(restrictedCourse)) {
+                        form.getRestrictedCourses().add(restrictedCourse);
+                        form.setRestrictedCourses(form.getRestrictedCourses());
+                    }
+                }
+            }
+        
+            return new ModelAndView("redirect:acc_manageApproval.do?method=showUnsavedRestrictedCourses");
+
+        }
+        
+        public ModelAndView removeSelectedRestrictedCourses(HttpServletRequest request, HttpServletResponse response,
+            Object command, BindException errors) throws Exception {
+
+            final ApprovalForm form;
+            final String[] selectedRestrictedCourseIds;
+            final Set<RestrictedCourse> removeRestrictedCourses;
+            
+            form = (ApprovalForm) command;
+            selectedRestrictedCourseIds = request.getParameterValues("courses");
+            removeRestrictedCourses = new HashSet<>(0);
+            
+            for (String selectedRestrictedCourseId : selectedRestrictedCourseIds) {
+
+                String[] value = selectedRestrictedCourseId.split(":");
+
+                Long courseGroupId = Long.valueOf(value[0]);
+                Long courseId = Long.valueOf(value[1]);
+
+                removeRestrictedCourses.addAll(form.getRestrictedCourses().stream()
+                        .filter(r -> r.getCourse().getId().equals(courseId) && r.getCourseGroup().getId().equals(courseGroupId))
+                        .collect(Collectors.toSet()));
+                form.getRestrictedCourses().removeIf(r -> r.getCourse().getId().equals(courseId) && r.getCourseGroup().getId().equals(courseGroupId));
+            }
+            
+            if(removeRestrictedCourses.size() > 0)
+                accreditationService.deleteRestrictedCourses(removeRestrictedCourses);
+        
+            return new ModelAndView("redirect:acc_manageApproval.do?method=showRestrictedCourses");
+
+        }
+        
+        public ModelAndView saveSelectedRestrictedCourses(HttpServletRequest request, HttpServletResponse response,
+            Object command, BindException errors) throws Exception {
+
+            ApprovalForm form;
+            
+            form = (ApprovalForm) command;
+            accreditationService.saveRestrictedCourses(form.getRestrictedCourses());
+        
+            return new ModelAndView("redirect:acc_manageApproval.do?method=showRestrictedCourses");
+
+        }
+        
 	/**
 	 * Display the add document page for Provider Approval
 	 * @param request
@@ -2720,6 +2926,15 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
 			String listCreditReportingFieldTemplate) {
 		this.listCreditReportingFieldTemplate = listCreditReportingFieldTemplate;
 	}
+        
+        public String getListRestrictedCoursesTemplate() {
+		return listRestrictedCoursesTemplate;
+	}
+
+	public void setListRestrictedCoursesTemplate(
+			String listRestrictedCoursesTemplate) {
+		this.listRestrictedCoursesTemplate = listRestrictedCoursesTemplate;
+	}
 
 	public String getCourseApprovalRegulatorCategoryTemplate() {
 		return courseApprovalRegulatorCategoryTemplate;
@@ -2779,8 +2994,27 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
 		this.lmsCourseApprovalClientToSF = lmsCourseApprovalClientToSF;
 	}
 	
-	
-	
-	
-	
+        public EntitlementService getEntitlementService() {
+            return entitlementService;
+        }
+
+        public void setEntitlementService(EntitlementService entitlementService) {
+            this.entitlementService = entitlementService;
+        }
+        
+        public String getAddRestrictedCoursesTemplate() {
+            return addRestrictedCoursesTemplate;
+        }
+
+        public void setAddRestrictedCoursesTemplate(String addRestrictedCoursesTemplate) {
+            this.addRestrictedCoursesTemplate = addRestrictedCoursesTemplate;
+        }
+        
+        public CourseAndCourseGroupService getCourseAndCourseGroupService() {
+        return courseAndCourseGroupService;
+        }
+
+        public void setCourseAndCourseGroupService(CourseAndCourseGroupService courseAndCourseGroupService) {
+            this.courseAndCourseGroupService = courseAndCourseGroupService;
+        }
 }
