@@ -41,6 +41,7 @@ import com.softech.vu360.lms.model.Regulator;
 import com.softech.vu360.lms.model.RegulatorCategory;
 import com.softech.vu360.lms.model.RegulatoryAnalyst;
 import com.softech.vu360.lms.model.RegulatoryApproval;
+import com.softech.vu360.lms.model.RestrictedCourse;
 import com.softech.vu360.lms.model.ValidationQuestion;
 import com.softech.vu360.lms.vo.CourseApprovalVO;
 import com.softech.vu360.lms.vo.VU360User;
@@ -270,5 +271,7 @@ public interface AccreditationService {
    public InstructorApproval getInstructorApprovalDeleteFalseById(Long instructorApprovalID);
    public ProviderApproval getProviderApprovalDeleteFalseById(Long providerApprovalID);
    public boolean batchInsertPurchaseNumberCertificates(Set<PurchaseCertificateNumber> purchaseCertificateNumbers);
-	public List<PurchaseCertificateNumber> checkPurchaseNumbersByCourseApproval(CourseApproval courseApproval, List<String> purchaseCertificateNumbers);
+   public List<PurchaseCertificateNumber> checkPurchaseNumbersByCourseApproval(CourseApproval courseApproval, List<String> purchaseCertificateNumbers);
+   public void saveRestrictedCourses(Set<RestrictedCourse> restrictedCourses);
+   public void deleteRestrictedCourses(Set<RestrictedCourse> restrictedCourses);
 }

@@ -20,6 +20,7 @@ import com.softech.vu360.lms.model.EnrollmentCourseView;
 import com.softech.vu360.lms.model.Learner;
 import com.softech.vu360.lms.model.LearnerEnrollment;
 import com.softech.vu360.lms.model.OrgGroupEntitlement;
+import com.softech.vu360.lms.model.RestrictedCourse;
 import com.softech.vu360.lms.model.TrainingPlanCourse;
 import com.softech.vu360.lms.model.TrainingPlanCourseView;
 import com.softech.vu360.lms.model.VU360User;
@@ -220,4 +221,5 @@ public interface EntitlementService {
         public List<Long> getCustomerEntitlementForOrgGroupEntitlementsByLearnerIds(Long learnerIds[]);
         public List<Long> getCustomerEntitlementForOrgGroupEntitlementsByLearnerGroupIds(List<Long> learnerGrpIds);
         public boolean isEnforceOrgGroupEnrollmentRestrictionEnable(Customer customer);
+        public List<TreeNode> getTreeForContract(Set<RestrictedCourse> restrictedCourses);
 }

@@ -99,12 +99,14 @@
                         <td width="194"><div class="tab_blank"></div></td>
                         <td>&nbsp;</td>
                         <td width="800">
-                		<a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalSummary';"><div class="tab" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Summary")</div></a>
-                        <a href="#"><div class="tab_selected" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Regulators")</div></a>
-                        <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalRegulatorCategories';"><div class="tab" style="width:150px;">$brander.getBrandElement("lms.accraditation.editApproval.caption.RegulatorCategories")</div></a>
-                        <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalRequirement';"><div class="tab" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Requirements")</div></a>
-                        <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalDocuments';"><div class="tab" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Documents")</div></a>
-                        <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalCustomField';"><div class="tab" style="border-right-style:solid;">$brander.getBrandElement("lms.accraditation.editApproval.caption.Custom-Fields")</div></a>                        </td>
+                            <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalSummary';"><div class="tab" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Summary")</div></a>
+                            <a href="#"><div class="tab_selected" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Regulators")</div></a>
+                            <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalRegulatorCategories';"><div class="tab" style="width:150px;">$brander.getBrandElement("lms.accraditation.editApproval.caption.RegulatorCategories")</div></a>
+                            <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalRequirement';"><div class="tab" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Requirements")</div></a>
+                            <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalDocuments';"><div class="tab" >$brander.getBrandElement("lms.accraditation.editApproval.caption.Documents")</div></a>
+                            <a onClick="javascript:window.location='acc_manageApproval.do?method=showCourseApprovalPurchasedCertificate';"><div class="tab"  style="width:190px;">$brander.getBrandElement("lms.accraditation.editApproval.caption.PurchasedCertificate")</div></a>
+                            <a onClick="javascript:window.location='acc_manageApproval.do?method=showRestrictedCourses';"><div class="tab" style="width:190px;border-right-style:solid;">$brander.getBrandElement("lms.accraditation.editApproval.caption.RestrictedCourses")</div></a>
+                        </td>
                         <td>&nbsp;</td>
                     </tr>
                 </tbody>

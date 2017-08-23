@@ -3570,51 +3570,54 @@
     <!-- ========================= MANAGE & EDIT APPROVAL ============================ -->
      
     <bean id="manageEditApproval" class="com.softech.vu360.lms.web.controller.accreditation.ManageAndEditApprovalController">
-          <property name="methodNameResolver">
+        <property name="methodNameResolver">
             <bean class="org.springframework.web.servlet.mvc.multiaction.ParameterMethodNameResolver">
                 <property name="paramName" value="method"/>
             </bean>
-          </property>
-          <property name="commandName" value="approvalForm"/>
-          <property name="commandClass" value="com.softech.vu360.lms.web.controller.model.accreditation.ApprovalForm"/>
+        </property>
+        <property name="commandName" value="approvalForm"/>
+        <property name="commandClass" value="com.softech.vu360.lms.web.controller.model.accreditation.ApprovalForm"/>
 
-          <property name="searchApprovalTemplate" value="accreditation/approvals/manage_approvals"/>          
-		  <property name="editApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_document"/>
+        <property name="searchApprovalTemplate" value="accreditation/approvals/manage_approvals"/>          
+        <property name="editApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_document"/>
 
-          <property name="courseApprovalSummaryTemplate" value="accreditation/approvals/editApproval/edit_approval_course"/>
-		  <property name="courseApprovalRegulatorTemplate" value="accreditation/approvals/editApproval/edit_approval_course_regulators"/>
-		  <property name="courseApprovalRegulatorCategoryTemplate" value="accreditation/approvals/editApproval/edit_approval_course_regulatorCategories"/>
-		  <property name="courseApprovalPurchasedCertificateTemplate" value="accreditation/approvals/editApproval/edit_approval_course_purchasedCertificate"/>
-		  <property name="courserApprovalReportingFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_course_reportingfields"/>
-		  <property name="courserApprovalRequirementTemplate" value="accreditation/approvals/editApproval/edit_approval_course_requirements"/>
-          <property name="showCourseApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_approval_course_documents"/>
-          <property name="courseApprovalCustomFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_course_customfield"/>
-		  <property name="listCreditReportingFieldTemplate" value="accreditation/approvals/editApproval/listCreditReportingField"/>
+        <property name="courseApprovalSummaryTemplate" value="accreditation/approvals/editApproval/edit_approval_course"/>
+        <property name="courseApprovalRegulatorTemplate" value="accreditation/approvals/editApproval/edit_approval_course_regulators"/>
+        <property name="courseApprovalRegulatorCategoryTemplate" value="accreditation/approvals/editApproval/edit_approval_course_regulatorCategories"/>
+        <property name="courseApprovalPurchasedCertificateTemplate" value="accreditation/approvals/editApproval/edit_approval_course_purchasedCertificate"/>
+        <property name="courserApprovalReportingFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_course_reportingfields"/>
+        <property name="courserApprovalRequirementTemplate" value="accreditation/approvals/editApproval/edit_approval_course_requirements"/>
+        <property name="showCourseApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_approval_course_documents"/>
+        <property name="courseApprovalCustomFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_course_customfield"/>
+        <property name="listCreditReportingFieldTemplate" value="accreditation/approvals/editApproval/listCreditReportingField"/>
+        <property name="listRestrictedCoursesTemplate" value="accreditation/approvals/editApproval/edit_approval_restricted_courses"/>
 			
-          <property name="providerApprovalSummaryTemplate" value="accreditation/approvals/editApproval/edit_approval_provider"/>
-		  <property name="providerApprovalRegulatorTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_regulators"/>
-		  <property name="providerApprovalProviderTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_provider"/>
-		  <property name="showProviderApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_documents"/>
-		  <property name="providerApprovalCustomFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_customfield"/>
+        <property name="providerApprovalSummaryTemplate" value="accreditation/approvals/editApproval/edit_approval_provider"/>
+        <property name="providerApprovalRegulatorTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_regulators"/>
+        <property name="providerApprovalProviderTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_provider"/>
+        <property name="showProviderApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_documents"/>
+        <property name="providerApprovalCustomFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_provider_customfield"/>
 			
-          <property name="instructorApprovalSummaryTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor"/>
-          <property name="instructorApprovalRegulatorTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_regulators"/>
-          <property name="instructorApprovalProviderTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_provider"/>
-          <property name="showInstructorApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_documents"/>
-          <property name="instructorApprovalCustomFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_customfield"/>
-          <property name="instructorApprovalInstructorTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_instructor"/>
-          <property name="instructorApprovalCourseTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_courses"/>
+        <property name="instructorApprovalSummaryTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor"/>
+        <property name="instructorApprovalRegulatorTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_regulators"/>
+        <property name="instructorApprovalProviderTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_provider"/>
+        <property name="showInstructorApprovalDocumentsTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_documents"/>
+        <property name="instructorApprovalCustomFieldTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_customfield"/>
+        <property name="instructorApprovalInstructorTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_instructor"/>
+        <property name="instructorApprovalCourseTemplate" value="accreditation/approvals/editApproval/edit_approval_instructor_courses"/>
 
-          <property name="redirectTemplate" value="accreditation/approvals/editApproval/redirect"/>
-          <property name="accreditationService" ref="accreditationService"/>
-		  <property name="validator" ref="editApprovalValidator"/>
+        <property name="redirectTemplate" value="accreditation/approvals/editApproval/redirect"/>
+        <property name="accreditationService" ref="accreditationService"/>
+        <property name="entitlementService" ref="entitlementService"/>
+        <property name="courseAndCourseGroupService" ref="courseAndCourseGroupService"/>
+        <property name="validator" ref="editApprovalValidator"/>
 
-		  <property name="redirectChangeCourse" value="redirect:/acc_addApprovalCourse.do"/>
-		  <property name="redirectChangeRegulatorCategory" value="redirect:/acc_addApprovalRegulatorCategory.do"/>
+        <property name="redirectChangeCourse" value="redirect:/acc_addApprovalCourse.do"/>
+        <property name="redirectChangeRegulatorCategory" value="redirect:/acc_addApprovalRegulatorCategory.do"/>
+	<property name="addRestrictedCoursesTemplate" value="accreditation/approvals/editApproval/edit_approval_add_restricted_courses"/>	  
 		  
-		  
-		  <property name="lcmsClientWS" ref="lcmsClientWS"/>
-		  <property name="lmsCourseApprovalClientToSF" ref="lmsCourseApprovalClientToSF"/>
+        <property name="lcmsClientWS" ref="lcmsClientWS"/>
+        <property name="lmsCourseApprovalClientToSF" ref="lmsCourseApprovalClientToSF"/>
     </bean>
     
      <!-- ========================= ADD PURCHASED CERTIFICATE NUMBER IN APPROVAL ============================ -->
