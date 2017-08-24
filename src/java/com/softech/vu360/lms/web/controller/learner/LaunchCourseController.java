@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import com.softech.vu360.lms.model.AICCAssignableUnit;
 import com.softech.vu360.lms.model.AICCCourse;
 import com.softech.vu360.lms.model.ContentOwner;
 import com.softech.vu360.lms.model.Course;
+import com.softech.vu360.lms.model.CourseApproval;
 import com.softech.vu360.lms.model.CoursePlayerType;
 import com.softech.vu360.lms.model.CreditReportingField;
 import com.softech.vu360.lms.model.CreditReportingFieldValue;
@@ -57,6 +57,7 @@ import com.softech.vu360.lms.model.LearnerProfile;
 import com.softech.vu360.lms.model.LearningSession;
 import com.softech.vu360.lms.model.MultiSelectCreditReportingField;
 import com.softech.vu360.lms.model.MultiSelectCustomField;
+import com.softech.vu360.lms.model.RestrictedCourse;
 import com.softech.vu360.lms.model.SCO;
 import com.softech.vu360.lms.model.ScormCourse;
 import com.softech.vu360.lms.model.SingleSelectCreditReportingField;
@@ -94,6 +95,9 @@ import com.softech.vu360.util.LearnersToBeMailedService;
 import com.softech.vu360.util.SendMailService;
 import com.softech.vu360.util.VU360Branding;
 import com.softech.vu360.util.VU360Properties;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -143,6 +147,7 @@ public class LaunchCourseController extends VU360BaseMultiActionController {// i
     private DistributorService distributorService = null;
     private CoursePlayerTypeService coursePlayerTypeService=null;
     private AICCAssignableUnitService aiccAssignableUnitService=null;
+    private String courseRestrictedTemplate = null;
 
     public LaunchCourseController() {
 	super();
@@ -997,8 +1002,37 @@ public class LaunchCourseController extends VU360BaseMultiActionController {// i
 			int varCourseApprovalId=0;
 			
 			try{
-				if(form.getCourseApprovalId()!=null)
-					varCourseApprovalId= Integer.valueOf(form.getCourseApprovalId().toString());
+                            if(form.getCourseApprovalId()!=null) {
+
+                                varCourseApprovalId= Integer.valueOf(form.getCourseApprovalId().toString());
+
+                                if(accreditationService.isRestrictedCourse(learner.getId(), Long.valueOf(varCourseApprovalId))) {
+
+                                    Map<Object, Object> context;
+                                    CourseApproval courseApproval;
+                                    Set<RestrictedCourse> restrictedCourses;
+                                    Set<Course> courses;
+
+                                    context = new HashMap<>();
+                                    courses = new HashSet<>(0);
+
+                                    courseApproval = accreditationService.getCourseApprovalById(varCourseApprovalId);
+
+                                    if(courseApproval != null) {
+
+                                        restrictedCourses = courseApproval.getRestrictedCourses();
+
+                                        if(restrictedCourses != null) {
+                                            courses.addAll(restrictedCourses.stream().map(x -> x.getCourse()).collect(Collectors.toSet()));
+                                        }
+
+                                        context.put("restrictedCourses", courses);
+                                        context.put("courseName", course.getName());
+
+                                        return new ModelAndView(courseRestrictedTemplate, "context", context);
+                                    }
+                                }
+                            }
 			}catch(Exception subE){	
 				log.error("Error in LaunchCourseController. Because of getting Course Approval Id for save data into learningSession");
 			}
@@ -2275,6 +2309,14 @@ public class LaunchCourseController extends VU360BaseMultiActionController {// i
 
 	public void setLearnersToBeMailedService(LearnersToBeMailedService learnersToBeMailedService) {
 		this.learnersToBeMailedService = learnersToBeMailedService;
+	}
+        
+        public String getCourseRestrictedTemplate() {
+		return courseRestrictedTemplate;
+	}
+
+	public void setCourseRestrictedTemplate(String courseRestrictedTemplate) {
+		this.courseRestrictedTemplate = courseRestrictedTemplate;
 	}
 	
 }
