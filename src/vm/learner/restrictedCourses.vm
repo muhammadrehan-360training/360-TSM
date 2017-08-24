@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>$brander.getBrandElement("lms.launchCourse.courseRestricted.title")</title>
+        #parse("snippets/footerLinksHeader.vm")
+        <link rel="stylesheet" type="text/css" media="all" href="brands/default/en/css/styles.css" />
+        <link rel="stylesheet" type="text/css" media="all" href="brands/default/en/css/styles-breadcrumb.css" />
+        <link rel="stylesheet" type="text/css" media="all" href="brands/default/en/css/styles-icons.css" />
+    </head>
+    <body>
+        <table id="table-layout" border="1" cellpadding="0" cellspacing="0">
+            <tr>
+                <td id="header" colspan="2">
+                    <div id="header">
+                        <div class="$brander.getBrandElement("lms.mycourses.cssClass.wel-logo")">
+                            <div id="a1" class="$brander.getBrandElement("lms.mycourses.cssClass.welcomeMessage")"></div>
+                            <div id="a2" class="$brander.getBrandElement("lms.mycourses.cssClass.logo")"><img src="$brander.getBrandElement("lms.header.logo.src")"></div>
+                        </div>
+                    </div>
+                    <div class="box_header">
+                        <span class="box_heading" style="text-align:center; width:100%">${context.courseName}</span>
+                    </div>
+                </td>
+            </tr>
+            <tr id="main">
+                <td id="content">
+                    <div id="content2a"  style="overflow-y:auto;height:85%;position:relative;min-width:10px;padding:0; ">
+                        <table id="table-page-description" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;margin-left:15px;margin-bottom:15px">
+                            <tr>
+                                <td id="logoHolder" class="courseLogoCoursesApproval">&nbsp;</td>
+                                <td id="page-description">
+                                    <div id="page-heading">$brander.getBrandElement("lms.launchCourse.courseRestricted.heading")</div>
+                                    <div id="page-help"><strong>$brander.getBrandElement("lms.launchCourse.courseRestricted.desc")</strong></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>                                                        
+                            #foreach($course in $context.restrictedCourses)
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td style="font-size:14px">$course.name</td>
+                            </tr>
+                            #end
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

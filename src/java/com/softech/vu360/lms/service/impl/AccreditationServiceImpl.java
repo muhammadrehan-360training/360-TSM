@@ -2319,4 +2319,9 @@ public class AccreditationServiceImpl implements AccreditationService {
     public void deleteRestrictedCourses(Set<RestrictedCourse> restrictedCourses) {
         restrictedCourseRepository.delete(restrictedCourses);
     }
+    
+    @Override
+    public boolean isRestrictedCourse(Long learnerId, Long courseApprovalId) {
+        return restrictedCourseRepository.isRestrictedCourse(learnerId, courseApprovalId);
+    }
 }

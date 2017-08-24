@@ -787,13 +787,13 @@
         <property name="jurisdictionSuggestTemplate" value="learner/jurisdictionSuggest"/>
         <property name="noAdditionCourseApprovalTemplate" value="learner/notAdditionCourseApprovalFound"/>
         <property name="entitlementService" ref="entitlementService"/>
-          <property name="launchCourseService" ref="launchCourseService"/>
+        <property name="launchCourseService" ref="launchCourseService"/>
         <property name="courseAndCourseGroupService" ref="courseAndCourseGroupService"/>
         <property name="learnerHomeworkAssignmentSubmissionService" ref="learnerHomeworkAssignmentSubmissionService"/>
         <property name="learnerService" ref="learnerService"/>
         <property name="userService" ref="userDetailsService" />      
         <property name="velocityEngine" ref="velocityEngine" />  
-		<property name="customFieldService" ref="customFieldService"/>
+        <property name="customFieldService" ref="customFieldService"/>
         <property name="accreditationService" ref="accreditationService" />
         <property name="enrollmentService" ref="enrollmentService"/>
         <property name="customerService" ref="customerService"/>
@@ -808,8 +808,8 @@
         <property name="commandClass" value="com.softech.vu360.lms.web.controller.model.CreditReportingForm"/>
         <property name="coursePlayerTypeService" ref="coursePlayerTypeService"/>
         <property name="aiccAssignableUnitService" ref="aiccAssignableUnitService"/>
-		<property name="learnersToBeMailedService" ref="learnersToBeMailedService" />
-		
+        <property name="learnersToBeMailedService" ref="learnersToBeMailedService" />
+        <property name="courseRestrictedTemplate" value="learner/restrictedCourses" />
     </bean>    
     <bean id="creditReportingFormValidator" class="com.softech.vu360.lms.web.controller.validator.CreditReportingFormValidator">
     </bean>
