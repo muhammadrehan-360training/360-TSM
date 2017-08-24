@@ -274,4 +274,5 @@ public interface AccreditationService {
    public List<PurchaseCertificateNumber> checkPurchaseNumbersByCourseApproval(CourseApproval courseApproval, List<String> purchaseCertificateNumbers);
    public void saveRestrictedCourses(Set<RestrictedCourse> restrictedCourses);
    public void deleteRestrictedCourses(Set<RestrictedCourse> restrictedCourses);
+   public boolean isRestrictedCourse(Long learnerId, Long courseApprovalId);
 }
