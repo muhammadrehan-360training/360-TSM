@@ -222,4 +222,6 @@ public interface EntitlementService {
         public List<Long> getCustomerEntitlementForOrgGroupEntitlementsByLearnerGroupIds(List<Long> learnerGrpIds);
         public boolean isEnforceOrgGroupEnrollmentRestrictionEnable(Customer customer);
         public List<TreeNode> getTreeForContract(Set<RestrictedCourse> restrictedCourses);
+        public List<TreeNode> getCoursesTreeByCourseGroup(final String title, final String entityId, final String keywords, final Map context);
+        public HashMap<CourseGroup, List<Course>> getCoursesTree(final String courseName, final String entityId, final String keywords);
 }

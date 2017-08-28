@@ -27,4 +27,6 @@ public interface RestrictedCourseRepository extends CrudRepository<RestrictedCou
                     "and ca_rc.course_id in (_c.id)", 
             nativeQuery=true)
     public boolean isRestrictedCourse(Long learnerId, Long courseApprovalId);
+
+    public void deleteByCourseApprovalId(Long courseApprovalId);
 }

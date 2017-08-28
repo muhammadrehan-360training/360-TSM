@@ -29,4 +29,5 @@ public interface CourseRepositoryCustom  {
 	
 	public List<Object[]> getEntitlementsByCourseGroupId(Long learner_Id, Long courseGroupId);
 	public List<Map<Object, Object>> getEntitlementsByTrainingPlanId(Long learner_Id, Long trainingPlanId);
+        public List<Map<Object, Object>> getCoursesByCourseGroupHierarchy(final String courseName, final String entityId, final String keywords);
 }

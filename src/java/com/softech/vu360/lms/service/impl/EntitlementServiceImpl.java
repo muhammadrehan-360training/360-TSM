@@ -2928,50 +2928,99 @@ public class EntitlementServiceImpl implements EntitlementService {
 
 	}
 
+    @Override
+    public HashMap<CourseGroup, List<Course>> getCoursesTree(final String courseName, final String entityId, final String keywords) {
+        Course course;
+        CourseGroup courseGroup;
+        HashMap<Long, CourseGroup> mapCourseGroupId;
+        HashMap<CourseGroup, List<Course>> mapCourseGroup;
+        List<Map<Object, Object>> results;
 
-	public HashMap<CourseGroup, List<Course>> findAvailableCourses(Distributor distributor,String courseName, String entityId, String keywords){
+        course = null;
+        courseGroup = null;
+        mapCourseGroupId = new HashMap<>();
+        mapCourseGroup = new HashMap<>();
 
-		List<Map<Object, Object>> results = courseRepository.findAvailableCourses(distributor, courseName,entityId,keywords);
+        results = courseRepository.getCoursesByCourseGroupHierarchy(courseName, entityId, keywords);
 
-		Course course=null;
-		CourseGroup courseGroup = null;
-		HashMap<Long,CourseGroup>cgIDs = new HashMap<Long, CourseGroup>();
-		HashMap<CourseGroup,List<Course>> courseGroups=new HashMap<CourseGroup, List<Course>>();
+        for (Map<Object, Object> record : results) {
 
-		for(Map<Object, Object> record : results){
+            if (record.get("COURSE_ID") != null && StringUtils.isNotBlank(record.get("COURSE_ID").toString())) {
+                course = new Course();
+                course.setId(Long.parseLong(record.get("COURSE_ID").toString()));
+                course.setName(record.get("COURSENAME").toString());
+                course.setCourseStatus(Course.PUBLISHED);
+                course.setCourseTitle(course.getName());
+                course.setBussinesskey(record.get("COURSEBUSINESSKEY") == null ? "" : record.get("COURSEBUSINESSKEY").toString());
 
-			if(record.get("COURSE_ID")!=null && StringUtils.isNotBlank(record.get("COURSE_ID").toString())){
-				course=new Course();
-				course.setId(Long.parseLong(record.get("COURSE_ID").toString()));
-				course.setName(record.get("COURSENAME").toString());
-				course.setCourseStatus(Course.PUBLISHED);
-				course.setCourseTitle(course.getName());
-				course.setBussinesskey(record.get("COURSEBUSINESSKEY")==null?"":record.get("COURSEBUSINESSKEY").toString());
+                courseGroup = getCourseGroupHierarchy(record);
 
-				courseGroup = getCourseGroupHierarchy(record);
+                if (mapCourseGroupId.containsKey(courseGroup.getId())) {
+                    courseGroup = mapCourseGroupId.get(courseGroup.getId());
+                    courseGroup.getCourses().add(course);
+                } else {
+                    courseGroup.getCourses().add(course);
+                    mapCourseGroupId.put(courseGroup.getId(), courseGroup);
 
-				if(cgIDs.containsKey(courseGroup.getId())){//i.e. this CG is already in the list
-					courseGroup=cgIDs.get(courseGroup.getId());
-					courseGroup.getCourses().add(course);
-				} else{//i.e. 1st time adding this CG
-					courseGroup.getCourses().add(course);
-					cgIDs.put(courseGroup.getId(), courseGroup);
+                }
+            }
+        }
 
-				}
-			}
+        mapCourseGroupId.values().forEach((cg) -> {
+            mapCourseGroup.put(cg, cg.getActiveCourses());
+        });
 
-		}
+        log.debug("-- final courseList.size()=>" + mapCourseGroup.size());
+        return mapCourseGroup;
+    }
 
-		for(CourseGroup cG : cgIDs.values()){
-			courseGroups.put(cG, cG.getActiveCourses());
-		}
+    @Override
+    public HashMap<CourseGroup, List<Course>> findAvailableCourses(Distributor distributor, String courseName, String entityId, String keywords) {
 
+        Course course;
+        CourseGroup courseGroup;
+        HashMap<Long, CourseGroup> mapCourseGroupId;
+        HashMap<CourseGroup, List<Course>> mapCourseGroup;
+        List<Map<Object, Object>> results;
 
-		log.debug("-- final courseList.size()=>"+courseGroups.size());
-		return courseGroups;
+        course = null;
+        courseGroup = null;
+        mapCourseGroupId = new HashMap<>();
+        mapCourseGroup = new HashMap<>();
 
+        results = courseRepository.findAvailableCourses(distributor, courseName, entityId, keywords);
 
-	}
+        for (Map<Object, Object> record : results) {
+
+            if (record.get("COURSE_ID") != null && StringUtils.isNotBlank(record.get("COURSE_ID").toString())) {
+                course = new Course();
+                course.setId(Long.parseLong(record.get("COURSE_ID").toString()));
+                course.setName(record.get("COURSENAME").toString());
+                course.setCourseStatus(Course.PUBLISHED);
+                course.setCourseTitle(course.getName());
+                course.setBussinesskey(record.get("COURSEBUSINESSKEY") == null ? "" : record.get("COURSEBUSINESSKEY").toString());
+
+                courseGroup = getCourseGroupHierarchy(record);
+
+                if (mapCourseGroupId.containsKey(courseGroup.getId())) {
+                    courseGroup = mapCourseGroupId.get(courseGroup.getId());
+                    courseGroup.getCourses().add(course);
+                } else {
+                    courseGroup.getCourses().add(course);
+                    mapCourseGroupId.put(courseGroup.getId(), courseGroup);
+
+                }
+            }
+        }
+
+        mapCourseGroupId.values().forEach((cg) -> {
+            mapCourseGroup.put(cg, cg.getActiveCourses());
+        });
+
+        log.debug("-- final courseList.size()=>" + mapCourseGroup.size());
+        return mapCourseGroup;
+
+    }
 
 	public HashMap<CourseGroup, List<Course>> findAvailableCourses(Distributor distributor, List<Long> courseIdList){
 
@@ -3023,8 +3072,8 @@ public class EntitlementServiceImpl implements EntitlementService {
 		CourseGroup parentCourseGroup=null;
 		CourseGroup relationalCG=null;
 
-		currentCG.setId(Long.parseLong(record.get("COURSEGROUP_ID").toString()));
-		currentCG.setName(record.get("COURSEGROUPNAME").toString());
+		currentCG.setId(record.get("COURSEGROUP_ID") == null ? null : Long.parseLong(record.get("COURSEGROUP_ID").toString()));
+		currentCG.setName(record.get("COURSEGROUPNAME") == null ? null : record.get("COURSEGROUPNAME").toString());
 
 		Stack<CourseGroup> stack = new Stack<CourseGroup>();
 		stack.push(currentCG);
@@ -3418,5 +3467,107 @@ public class EntitlementServiceImpl implements EntitlementService {
 			}
 		}
 	}
+        
+    @Override
+    public List<TreeNode> getCoursesTreeByCourseGroup(final String title, final String entityId, final String keywords, final Map context) {
 
+        final List<TreeNode> treeNodesList;
+        final HashMap<CourseGroup, List<Course>> coursesList;
+        
+        treeNodesList = new ArrayList<>();
+
+        coursesList = getCoursesTree(title, entityId, keywords);
+
+        List<TreeNode> rootNodesReferences = new ArrayList<>();
+        TreeNode courseGroupCourseTreeNode = null;
+        for (CourseGroup courseGroup : coursesList.keySet()) {
+            if (coursesList.get(courseGroup) != null) {
+
+                List<Course> courseList = coursesList.get(courseGroup);
+                for (Course course : courseList) {
+                    if (courseGroup == null || courseGroup.getId() == null) {
+                        courseGroup = new CourseGroup();
+                        java.util.Date date = new java.util.Date();
+                        courseGroup.setId(new Long((date.getHours() + date.getMinutes() + date.getSeconds()) * 100));
+                        courseGroup.setName("Miscellaneous");
+                    }
+
+                    boolean courseAdded = false;
+                    for (TreeNode rootTreeNode : rootNodesReferences) {
+                        List<CourseGroup> childCourseGroups = new ArrayList<>();
+                        if (ArrangeCourseGroupTree.traverseTreeToAddCourse(rootTreeNode, courseGroup, course, childCourseGroups)) {
+                            courseAdded = true;
+                            break;
+                        }
+
+                        CourseGroup currentCourseGroup = courseGroup;
+                        while (!courseAdded && currentCourseGroup.getParentCourseGroup() != null) {
+                            CourseGroup parentCourseGroup = currentCourseGroup.getParentCourseGroup();
+                            childCourseGroups.add(currentCourseGroup);
+                            if (ArrangeCourseGroupTree.traverseTreeToAddCourse(rootTreeNode, parentCourseGroup, course, childCourseGroups)) {
+                                courseAdded = true;
+                                break;
+                            }
+                            currentCourseGroup = parentCourseGroup;
+                        }
+
+                        if (courseAdded) {
+                            break;
+                        }
+                    }
+
+                    if (!courseAdded) {
+                        courseGroupCourseTreeNode = ArrangeCourseGroupTree.getCourseGroupTreeNodeForCourse(courseGroup, course);
+                        rootNodesReferences.add(courseGroupCourseTreeNode);
+                    }
+                }
+
+                context.put("callMacroForChildren", "false");
+            } else {
+
+                CourseSort courseSort = new CourseSort();
+                List<Course> cgCourses = courseGroup.getActiveCourses();
+                if (cgCourses != null && cgCourses.size() > 0) {
+                    Collections.sort(cgCourses, courseSort);
+                    courseGroup.setCourses(cgCourses);
+                }
+
+                boolean courseGroupAdded = false;
+                for (TreeNode rootTreeNode : rootNodesReferences) {
+                    List<CourseGroup> childCourseGroups = new ArrayList<>();
+                    if (ArrangeCourseGroupTree.traverseTreeToAddCourseGroup(rootTreeNode, courseGroup, childCourseGroups)) {
+                        courseGroupAdded = true;
+                        break;
+                    }
+
+                    CourseGroup currentCourseGroup = courseGroup;
+                    while (!courseGroupAdded && currentCourseGroup.getParentCourseGroup() != null) {
+                        CourseGroup parentCourseGroup = currentCourseGroup.getParentCourseGroup();
+                        childCourseGroups.add(currentCourseGroup);
+                        if (ArrangeCourseGroupTree.traverseTreeToAddCourseGroup(rootTreeNode, parentCourseGroup, childCourseGroups)) {
+                            courseGroupAdded = true;
+                            break;
+                        }
+                        currentCourseGroup = parentCourseGroup;
+                    }
+
+                    if (courseGroupAdded) {
+                        break;
+                    }
+                }
+
+                if (!courseGroupAdded) {
+                    courseGroupCourseTreeNode = ArrangeCourseGroupTree.getCourseGroupTreeNodeForCourse(courseGroup, null);
+                    rootNodesReferences.add(courseGroupCourseTreeNode);
+                }
+                context.put("callMacroForChildren", "false");
+            }
+        }
+        for (TreeNode rootTreeNode : rootNodesReferences) {
+            treeNodesList.addAll(rootTreeNode.bfs());
+        }
+
+        return treeNodesList;
+
+    }
 }

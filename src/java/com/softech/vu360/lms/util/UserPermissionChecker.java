@@ -118,9 +118,6 @@ public class UserPermissionChecker {
 		
 		try
 		{
-			log.info("\t ---------- START - hasAccessToFeatureGroup : " + UserPermissionChecker.class.getName() + " ---------- ");
-			log.info("featureGroup = " + featureGroup);
-			
 			authenticatedUser = SecurityContextHolder.getContext().getAuthentication();
 			authenticatedUserDetails = (VU360UserAuthenticationDetails)authenticatedUser.getDetails();
 			userMode = authenticatedUserDetails.getCurrentMode();
@@ -129,8 +126,6 @@ public class UserPermissionChecker {
 				userMode = (VU360UserMode)session.getAttribute("clusteredCurrentMode");
 			}
 			
-			log.info("disabledFeatureGroups " + (getDisabledFeatureGroups(session) == null ? "is null" 
-					: "size = " + getDisabledFeatureGroups(session).size()));
 			/*
 			 * User having multiple roles, like Administrator, Manager & Learner
 			 * and those roles have a feature group with the same name. For instance, 
@@ -155,31 +150,23 @@ public class UserPermissionChecker {
 			if (getDisabledFeatureGroups(session) == null || !getDisabledFeatureGroups(session).contains(
 					new StringBuilder().append(userMode.toString()).append(":").append(featureGroup).toString()))
 			{
-				log.info("logInAsManagerRole = " + loggedInUser.getLogInAsManagerRole());
 				if(loggedInUser.getLogInAsManagerRole() != null)
 					hasAccess = hasAccessToFeatureGroup(loggedInUser.getLogInAsManagerRole().getLmsPermissions(), featureGroup);
 				else
 				{
 					for (com.softech.vu360.lms.vo.LMSRole role : loggedInUser.getLmsRoles()) 
 					{
-						log.info("role name = " + role.getRoleName());
 						hasAccess = hasAccessToFeatureGroup(role.getLmsPermissions(), featureGroup);
-						log.info("\t >>> Has " + (hasAccess ? "" : "Not ") + "Access");
 						if(hasAccess)
 							break;
 					}
 				}
 			}
-			log.info("hasAccess = " + hasAccess);
 			return hasAccess;
 		}
 		catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return true;
-		}
-		finally
-		{
-			log.info("\t ---------- END - hasAccessToFeatureGroup : " + UserPermissionChecker.class.getName() + " ---------- ");
 		}
 	}
 	
@@ -188,7 +175,6 @@ public class UserPermissionChecker {
 		boolean hasAccess = false;
 		for (com.softech.vu360.lms.vo.LMSRoleLMSFeature permission : permissions) 
 		{
-			log.debug("\tFG = " + permission.getLmsFeature().getFeatureGroup() + " , enabled = " + permission.getEnabled());
 			if (permission.getLmsFeature().getFeatureGroup().equals(featureGroup) && permission.getEnabled())
 			{
 				hasAccess = true;
@@ -203,7 +189,6 @@ public class UserPermissionChecker {
 		boolean hasAccess = false;
 		for (com.softech.vu360.lms.vo.LMSRoleLMSFeature permission : permissions) 
 		{
-			log.debug("\tFG : FC = " + permission.getLmsFeature().getFeatureGroup() + " : " + permission.getLmsFeature().getFeatureCode());
 			if (permission.getLmsFeature().getFeatureCode().equals(featureCode) && permission.getEnabled()) 
 			{
 				hasAccess = true;
@@ -217,36 +202,26 @@ public class UserPermissionChecker {
 	{
 		try
 		{
-			log.info("\t ---------- START - hasAccessToFeatureCode : " + UserPermissionChecker.class.getName() + " ---------- ");
-			log.info("featureCode = " + featureCode);
 			boolean hasAccess = false;
 			if(getDisabledFeatureCodes(session) == null || !getDisabledFeatureCodes(session).contains(featureCode))
 			{
-				log.info("logInAsManagerRole = " + loggedInUser.getLogInAsManagerRole());
 				if(loggedInUser.getLogInAsManagerRole() != null)
 					hasAccess = hasAccessToFeatureCode(loggedInUser.getLogInAsManagerRole().getLmsPermissions(), featureCode);
 				else
 				{
 					for (com.softech.vu360.lms.vo.LMSRole role : loggedInUser.getLmsRoles()) 
 					{
-						log.info("role name = " + role.getRoleName());
 						hasAccess = hasAccessToFeatureCode(role.getLmsPermissions(), featureCode);
 						if(hasAccess)
 							break;
 					}
 				}
 			}
-			log.info("hasAccess = " + hasAccess);
 			return hasAccess;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			return true;
 		}
-		finally
-		{
-			log.info("\t ---------- END - hasAccessToFeatureCode : " + UserPermissionChecker.class.getName() + " ---------- ");
-		}
 	}
-
 }
