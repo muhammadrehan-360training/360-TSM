@@ -2311,13 +2311,21 @@ public class AccreditationServiceImpl implements AccreditationService {
     }
     
     @Override
+    @Transactional
     public void saveRestrictedCourses(Set<RestrictedCourse> restrictedCourses) {
         restrictedCourseRepository.save(restrictedCourses);
     }
     
     @Override
+    @Transactional
     public void deleteRestrictedCourses(Set<RestrictedCourse> restrictedCourses) {
         restrictedCourseRepository.delete(restrictedCourses);
+    }
+    
+    @Override
+    @Transactional
+    public void deleteRestrictedCourses(Long courseApprovalId) {
+        restrictedCourseRepository.deleteByCourseApprovalId(courseApprovalId);
     }
     
     @Override
