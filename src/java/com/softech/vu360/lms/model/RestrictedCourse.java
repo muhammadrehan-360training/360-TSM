@@ -1,6 +1,7 @@
 package com.softech.vu360.lms.model;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,7 +27,7 @@ public class RestrictedCourse implements Serializable {
     @JoinColumn(name = "COURSEAPPROVAL_ID", referencedColumnName = "ID")
     private CourseApproval courseApproval;
 
-    @ManyToOne(optional = false, targetEntity = CourseGroup.class)
+    @ManyToOne(optional = true, targetEntity = CourseGroup.class)
     @JoinColumn(name = "COURSEGROUP_ID", referencedColumnName = "ID")
     private CourseGroup courseGroup;
 

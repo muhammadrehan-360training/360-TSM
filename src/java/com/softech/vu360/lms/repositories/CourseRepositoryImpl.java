@@ -26,6 +26,7 @@ import com.softech.vu360.lms.model.CustomerEntitlement;
 import com.softech.vu360.lms.model.Distributor;
 import com.softech.vu360.lms.model.LegacyCourse;
 import com.softech.vu360.util.FormUtil;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CourseRepositoryImpl implements CourseRepositoryCustom {
 
@@ -209,6 +210,137 @@ public class CourseRepositoryImpl implements CourseRepositoryCustom {
 		 mapList.addAll(rows);
  		return mapList;
 	}
+        
+        @Override
+	public List<Map<Object, Object>> getCoursesByCourseGroupHierarchy(final String courseName, final String entityId, final String keywords) {
+            
+            final StringBuilder queryString;
+            final AtomicInteger index;
+            final Query query;
+            final List rows;
+            final List<Map<Object, Object>> mapList;
+	
+            index = new AtomicInteger();
+            queryString = new StringBuilder();
+            
+            queryString.append("SELECT cg.NAME AS 'COURSEGROUPNAME'\n" +
+                "	,cg.ID AS 'COURSEGROUP_ID'\n" +
+                "	,cg.CourseGroupID AS 'BUSINESSKEY'\n" +
+                "	,c.NAME AS 'COURSENAME'\n" +
+                "	,c.ID AS 'COURSE_ID'\n" +
+                "	,c.KEYWORDS AS 'KEYWORDS'\n" +
+                "	,c.BUSSINESSKEY AS 'COURSEBUSINESSKEY'\n" +
+                "	,pcg10.NAME AS 'PARENTCOURSEGROUPNAME10'\n" +
+                "	,pcg9.NAME AS 'PARENTCOURSEGROUPNAME9'\n" +
+                "	,pcg8.NAME AS 'PARENTCOURSEGROUPNAME8'\n" +
+                "	,pcg7.NAME AS 'PARENTCOURSEGROUPNAME7'\n" +
+                "	,pcg6.NAME AS 'PARENTCOURSEGROUPNAME6'\n" +
+                "	,pcg5.NAME AS 'PARENTCOURSEGROUPNAME5'\n" +
+                "	,pcg4.NAME AS 'PARENTCOURSEGROUPNAME4'\n" +
+                "	,pcg3.NAME AS 'PARENTCOURSEGROUPNAME3'\n" +
+                "	,pcg2.NAME AS 'PARENTCOURSEGROUPNAME2'\n" +
+                "	,pcg1.NAME AS 'PARENTCOURSEGROUPNAME1'\n" +
+                "	,pcg10.ID AS 'PARENTCOURSEGROUP_ID10'\n" +
+                "	,pcg9.ID AS 'PARENTCOURSEGROUP_ID9'\n" +
+                "	,pcg8.ID AS 'PARENTCOURSEGROUP_ID8'\n" +
+                "	,pcg7.ID AS 'PARENTCOURSEGROUP_ID7'\n" +
+                "	,pcg6.ID AS 'PARENTCOURSEGROUP_ID6'\n" +
+                "	,pcg5.ID AS 'PARENTCOURSEGROUP_ID5'\n" +
+                "	,pcg4.ID AS 'PARENTCOURSEGROUP_ID4'\n" +
+                "	,pcg3.ID AS 'PARENTCOURSEGROUP_ID3'\n" +
+                "	,pcg2.ID AS 'PARENTCOURSEGROUP_ID2'\n" +
+                "	,pcg1.ID AS 'PARENTCOURSEGROUP_ID1'\n" +
+                "FROM COURSE c\n" +
+                "LEFT JOIN COURSE_COURSEGROUP ccg ON ccg.COURSE_ID = c.ID\n" +
+                "LEFT JOIN COURSEGROUP cg ON cg.ID = ccg.COURSEGROUP_ID\n" +
+                "LEFT JOIN COURSEGROUP pcg1 ON cg.PARENTCOURSEGROUP_ID = pcg1.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg2 ON pcg1.PARENTCOURSEGROUP_ID = pcg2.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg3 ON pcg2.PARENTCOURSEGROUP_ID = pcg3.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg4 ON pcg3.PARENTCOURSEGROUP_ID = pcg4.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg5 ON pcg4.PARENTCOURSEGROUP_ID = pcg5.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg6 ON pcg5.PARENTCOURSEGROUP_ID = pcg6.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg7 ON pcg6.PARENTCOURSEGROUP_ID = pcg7.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg8 ON pcg7.PARENTCOURSEGROUP_ID = pcg8.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg9 ON pcg8.PARENTCOURSEGROUP_ID = pcg9.ID\n" +
+                "LEFT JOIN COURSEGROUP pcg10 ON pcg9.PARENTCOURSEGROUP_ID = pcg10.ID\n" +
+                "WHERE c.COURSESTATUS = 'Published'\n" +
+                "	AND c.RETIREDTF = 0\n");
+
+            queryString.append(" ");
+            
+            if(courseName != null && !courseName.trim().isEmpty()) {
+                
+                Stream.of(courseName.split(",")).forEach(s -> {
+                    
+                    if(index.getAndIncrement() == 0)
+                        queryString.append(" AND (");
+                    else
+                        queryString.append(" OR ");
+                    
+                    queryString.append("c.NAME LIKE '%");
+                    queryString.append(s.trim().replace("'", "''"));
+                    queryString.append("%'");
+                });
+            }
+            
+            if(index.get() > 0)
+                queryString.append(")");
+            
+            // reset index
+            index.set(0);
+            
+            queryString.append(" ");
+            
+            if(entityId != null && !entityId.trim().isEmpty()) {
+                
+                Stream.of(entityId.split(",")).forEach(e -> {
+                    
+                    if(index.getAndIncrement() == 0)
+                        queryString.append(" AND (");
+                    else
+                        queryString.append(" OR ");
+                    
+                    queryString.append("c.BUSINESSKEY LIKE '%");
+                    queryString.append(e.trim().replace("'", "''"));
+                    queryString.append("%'");
+                });
+            }
+            
+            if(index.get() > 0)
+                queryString.append(")");
+            
+            // reset index
+            index.set(0);
+
+            if(keywords != null && !keywords.trim().isEmpty()) {
+                
+                Stream.of(keywords.split(",")).forEach(k -> {
+                    
+                    if(index.getAndIncrement() == 0)
+                        queryString.append(" AND (");
+                    else
+                        queryString.append(" OR ");
+                    
+                    queryString.append("c.KEYWORDS LIKE '%");
+                    queryString.append(k.trim().replace("'", "''"));
+                    queryString.append("%'");
+                });
+            }
+            
+            if(index.get() > 0)
+                queryString.append(")");
+            
+            // reset index
+            index.set(0);
+            
+            query = entityManager.createNativeQuery(queryString.toString());
+            query.unwrap(SQLQuery.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+            rows = query.getResultList();  
+            mapList = new ArrayList<>();
+            mapList.addAll(rows);
+            return mapList;
+	}
+        
 	public List<Map<Object, Object>> getByCourseAndCourseGroupId(List<CustomerEntitlement> customerEntitlements, 
 			Long trainingPlanCourseId, Long courseGroupId){
 		

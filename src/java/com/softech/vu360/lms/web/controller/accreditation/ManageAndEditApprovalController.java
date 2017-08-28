@@ -1472,15 +1472,11 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
         public ModelAndView searchCourseGroups( HttpServletRequest request, HttpServletResponse response,
 			Object command, BindException errors) throws Exception{
 
-            Customer customer;
-            Map<String, Object> context;
-            List<TreeNode> courseGroupTree;
+            final Map<String, Object> context;
+            final List<TreeNode> courseGroupTree;
             
-            Long[] resellerCourseGroupIDs;
-            List<Long> resellerCourseGroupIds;
-            
-            String keywords;
-            String title;
+            final String keywords;
+            final String title;
             String entityId;
             
             entityId = null;
@@ -1496,24 +1492,22 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
                 entityId = request.getParameter("courseGroupID");
             }
             
-            customer = ((VU360UserAuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails()).getCurrentCustomer();
-            courseGroupTree = entitlementService.getEntitlementCourseGroupTreeNode(null, title.trim(), entityId, keywords.trim(), "Course", context, customer);
-            resellerCourseGroupIDs = entitlementService.getCourseGroupIDArrayForDistributor(customer.getDistributor());
-            resellerCourseGroupIds = Arrays.asList(resellerCourseGroupIDs);
-            
-            
-            context.put("resellerCourseGroupIds", resellerCourseGroupIds);
-            context.put("courseGroupTree", courseGroupTree);
+            courseGroupTree = entitlementService.getCoursesTreeByCourseGroup(title.trim(), entityId, keywords.trim(), context);
             
             if (courseGroupTree == null) {
                 String[] error = {"error.admin.customerEnt.course.errorMsg1",
                     "error.admin.customerEnt.course.errorMsg2",
                     "error.admin.customerEnt.course.errorMsg3"};
                 context.put("error", error);
+                context.put("totalRecord", 0);
+                context.put("recordShowing", 0);
+            } else {
+                context.put("courseGroupTree", courseGroupTree);
+                context.put("totalRecord", courseGroupTree.size());
+                context.put("recordShowing", courseGroupTree.size());
             }
+            
             context.put("pageNo",0);
-            context.put("totalRecord", courseGroupTree.size());
-            context.put("recordShowing", courseGroupTree.size());
             
             return new ModelAndView(addRestrictedCoursesTemplate, "context", context);
 	}
@@ -1556,29 +1550,31 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
 
             final ApprovalForm form;
             final String[] selectedRestrictedCourseIds;
-            final Set<RestrictedCourse> removeRestrictedCourses;
+//            final Set<RestrictedCourse> removeRestrictedCourses;
             
             form = (ApprovalForm) command;
             selectedRestrictedCourseIds = request.getParameterValues("courses");
-            removeRestrictedCourses = new HashSet<>(0);
+//            removeRestrictedCourses = new HashSet<>(0);
             
             for (String selectedRestrictedCourseId : selectedRestrictedCourseIds) {
 
                 String[] value = selectedRestrictedCourseId.split(":");
 
-                Long courseGroupId = Long.valueOf(value[0]);
+//                Long courseGroupId = Long.valueOf(value[0]);
                 Long courseId = Long.valueOf(value[1]);
 
-                removeRestrictedCourses.addAll(form.getRestrictedCourses().stream()
-                        .filter(r -> r.getCourse().getId().equals(courseId) && r.getCourseGroup().getId().equals(courseGroupId))
-                        .collect(Collectors.toSet()));
-                form.getRestrictedCourses().removeIf(r -> r.getCourse().getId().equals(courseId) && r.getCourseGroup().getId().equals(courseGroupId));
+//                removeRestrictedCourses.addAll(form.getRestrictedCourses().stream()
+//                        .filter(r -> r.getId() != null && r.getCourse().getId().equals(courseId) && (r.getCourseGroup() != null && r.getCourseGroup().getId().equals(courseGroupId)))
+//                        .collect(Collectors.toSet()));
+                form.getRestrictedCourses().removeIf(r -> r.getCourse().getId().equals(courseId));
             }
             
-            if(removeRestrictedCourses.size() > 0)
-                accreditationService.deleteRestrictedCourses(removeRestrictedCourses);
+//            form.setRestrictedCourses(form.getRestrictedCourses());
+            
+//            if(removeRestrictedCourses.size() > 0)
+//                accreditationService.deleteRestrictedCourses(removeRestrictedCourses);
         
-            return new ModelAndView("redirect:acc_manageApproval.do?method=showRestrictedCourses");
+            return new ModelAndView("redirect:acc_manageApproval.do?method=showUnsavedRestrictedCourses");
 
         }
         
@@ -1586,11 +1582,19 @@ public class ManageAndEditApprovalController extends VU360BaseMultiActionControl
             Object command, BindException errors) throws Exception {
 
             ApprovalForm form;
+//            boolean hasAnyUnsavedRestrictedCourses;
             
             form = (ApprovalForm) command;
-            accreditationService.saveRestrictedCourses(form.getRestrictedCourses());
+            
+//            hasAnyUnsavedRestrictedCourses = form.getRestrictedCourses().stream().filter(r -> r.getId() == null).count() > 0;
+            
+//            if(hasAnyUnsavedRestrictedCourses) {
+                accreditationService.deleteRestrictedCourses(form.getAppId());
+                if(form.getRestrictedCourses().size() > 0)
+                    accreditationService.saveRestrictedCourses(form.getRestrictedCourses());
+//            }
         
-            return new ModelAndView("redirect:acc_manageApproval.do?method=showRestrictedCourses");
+            return new ModelAndView("redirect:acc_manageApproval.do?method=showCourseApprovalSummary");
 
         }
         
