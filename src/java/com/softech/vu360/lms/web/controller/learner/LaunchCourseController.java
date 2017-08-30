@@ -981,17 +981,21 @@ public class LaunchCourseController extends VU360BaseMultiActionController {// i
 	    Course course = null;
 	    Language lang = null;
 	    LearnerEnrollment learnerEnrollment = null;
+            LearnerCourseStatistics learnerCoursestatistics;
+            
+            learnerCoursestatistics = null;
+            
 	    if (learnerEnrollmentID != null) {
-			learnerEnrollment = entitlementService.getLearnerEnrollmentById(Long.valueOf(learnerEnrollmentID));
-			course = learnerEnrollment.getCourse();
-			
-						LearnerCourseStatistics learnerCoursestatistics = statsService.getLearnerCourseStatisticsByLearnerEnrollmentId(learnerEnrollment.getId());
-			 
-			 			if(learnerCoursestatistics != null){
-			 				if(learnerEnrollment.getCourseStatistics().getStatus().equals(LearnerCourseStatistics.NOT_STARTED)){
-			 					enrollmentService.marketoPacket(learnerEnrollment, COURSE_STARTED);
-			 	}
-			 }
+                learnerEnrollment = entitlementService.getLearnerEnrollmentById(Long.valueOf(learnerEnrollmentID));
+                course = learnerEnrollment.getCourse();
+
+                learnerCoursestatistics = statsService.getLearnerCourseStatisticsByLearnerEnrollmentId(learnerEnrollment.getId());
+
+                if(learnerCoursestatistics != null){
+                    if(learnerEnrollment.getCourseStatistics().getStatus().equals(LearnerCourseStatistics.NOT_STARTED)){
+                            enrollmentService.marketoPacket(learnerEnrollment, COURSE_STARTED);
+                    }
+                }
 			
 			lang =  course.getLanguage();
 			com.softech.vu360.lms.vo.Learner learner = user.getLearner();
@@ -1006,7 +1010,9 @@ public class LaunchCourseController extends VU360BaseMultiActionController {// i
 
                                 varCourseApprovalId= Integer.valueOf(form.getCourseApprovalId().toString());
 
-                                if(accreditationService.isRestrictedCourse(learner.getId(), Long.valueOf(varCourseApprovalId))) {
+                                if ((learnerCoursestatistics == null 
+                                        || learnerEnrollment.getCourseStatistics().getStatus().equals(LearnerCourseStatistics.NOT_STARTED)) 
+                                    && accreditationService.isRestrictedCourse(learner.getId(), Long.valueOf(varCourseApprovalId))) {
 
                                     Map<Object, Object> context;
                                     CourseApproval courseApproval;
