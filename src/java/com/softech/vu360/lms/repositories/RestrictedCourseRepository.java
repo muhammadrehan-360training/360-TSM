@@ -14,17 +14,22 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface RestrictedCourseRepository extends CrudRepository<RestrictedCourse, Long> {
 
-    @Query(value="select cast(count(ca_rc.id) as bit) from learnerenrollment _le, course _c, courseapproval ca, courseapproval_restrictedcourse ca_rc where _le.id in (\n" +
-                    "select distinct lcs.learnerenrollment_id from learner l, learnerenrollment le, learnercoursestatistics lcs, course c\n" +
-                    "where l.id = ?1\n" +
-                    "and le.learner_id = l.id\n" +
-                    "and upper(le.enrollmentstatus) in (upper('active'))\n" +
-                    "and lcs.learnerenrollment_id = le.id and upper(lcs.status) not in (upper('completed'), upper('notstarted'))\n" +
-                    ")\n" +
-                    "and _c.id = _le.course_id\n" +
-                    "and ca.id = ?2\n" +
-                    "and ca_rc.courseapproval_id = ca.id\n" +
-                    "and ca_rc.course_id in (_c.id)", 
+    @Query(value="select cast(count(ca_rc.id) as bit) \n" +
+        "from learnerenrollment le, courseapproval ca, \n" +
+        "courseapproval_restrictedcourse ca_rc \n" +
+        "where le.id in (\n" +
+        "  select distinct _lcs.learnerenrollment_id \n" +
+        "  from learner _l, learnerenrollment _le, \n" +
+        "  learnercoursestatistics _lcs\n" +
+        "  where _l.id = ?1\n" +
+        "  and _le.learner_id = _l.id\n" +
+        "  and upper(_le.enrollmentstatus) in (upper('active'))\n" +
+        "  and _lcs.learnerenrollment_id = _le.id \n" +
+        "  and upper(_lcs.status) in (upper('inprogress'))\n" +
+        ")\n" +
+        "and ca.id = ?2\n" +
+        "and ca_rc.courseapproval_id = ca.id\n" +
+        "and ca_rc.course_id in (le.course_id)", 
             nativeQuery=true)
     public boolean isRestrictedCourse(Long learnerId, Long courseApprovalId);
 
