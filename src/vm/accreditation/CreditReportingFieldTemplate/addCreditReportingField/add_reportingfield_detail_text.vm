@@ -1,4 +1,23 @@
-<table border="0" width="100%" cellpadding="0" cellspacing="3" heigth="100%">
+
+	#springBind("reportingFieldForm.fieldType")
+    #if( ${status.value} == "Single Line of Text")
+
+		<script language="javascript" type="text/javascript">
+		$(document).ready(function() {
+		    $('input[type=radio][name=creditReportingField.field_lengthRequired]').change(function() {
+		    	$('#headerTable tr.maximum').toggle();
+		    	$("#headerTable tr.minimum").toggle();
+		    });
+			//on load body 
+			if( $("input[name='creditReportingField.field_lengthRequired']:checked").val()=='true'){ 
+				$('#headerTable tr.maximum').toggle();
+				$("#headerTable tr.minimum").toggle();
+			}
+		});
+		</script>
+	#end
+		
+<table id="headerTable" class="headerTable" border="0" width="100%" cellpadding="0" cellspacing="3" heigth="100%">
     <tr>
         #springBind("reportingFieldForm.creditReportingField.fieldLabel")
         <td width="25%"><div class="row_text">$brander.getBrandElement("lms.accreditation.addCredentialCustomField.caption.Field-Name")</div></td>
@@ -27,6 +46,66 @@
         <td></td>
         <td></td>
     </tr>
+	#springBind("reportingFieldForm.fieldType")
+    #if( ${status.value} == "Single Line of Text")
+	
+    <tr>
+        <td valign="top"><div class="row_text">Allow</div></td>
+        #springBind("reportingFieldForm.creditReportingField.allowed_Datatype")
+        <td>
+      	   <select style="height: 20px; width: 182px;margin-left:14px;" class="input_text_field" name="${status.expression}">	               	               	           	                               
+			<option #if(${status.value} == "anyValue") selected #end value="anyValue">Any Value </option>
+			<option #if(${status.value} == "alphanumeric") selected #end value="alphanumeric">Alphanumeric</option>
+			<option #if(${status.value} == "wholeNumber") selected #end value="wholeNumber">Whole Number</option>
+			<option #if(${status.value} == "decimal") selected #end value="decimal">Decimal</option>
+           </select>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+	##end
+    <tr>
+        <td valign="top"><div class="row_text">Field Length</div></td>
+        <td>
+		    #springBind("reportingFieldForm.creditReportingField.field_lengthRequired")
+		    <input type="radio" style="margin-left:14px;" name="${status.expression}" value="true" #if(${status.value} == "true") checked #end />$brander.getBrandElement("lms.accreditation.credential.caption.Yes")
+		    <input type="radio" name="${status.expression}" value="false" #if(${status.value} == "false") checked #end />$brander.getBrandElement("lms.accreditation.credential.caption.No")
+        </td>
+        <td></td>
+    </tr>
+   <tr class="minimum" style="display: none;">
+        <td valign="top"><div class="row_text">Minimum</div></td>
+        #springBind("reportingFieldForm.creditReportingField.minimun_length")
+        <td>
+           <select style="height: 20px; width: 182px;margin-left:34px;" class="input_text_field" name="${status.expression}">
+           #set($start = 1)
+			#set($end = 100)
+			#set($range = [$start..$end])
+			#foreach($i in $range)
+			   <option #if(${status.value} == $i) selected #end value="$i">$i</option>
+			#end	               	               	           	                               
+           </select>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr class="maximum" style="display: none;">
+        <td valign="top"><div class="row_text">Maximum</div></td>
+        #springBind("reportingFieldForm.creditReportingField.maximun_length")
+        <td>
+           <select style="height: 20px; width: 182px;margin-left:34px;" class="input_text_field" name="${status.expression}">
+           #set($start = 1)
+			#set($end = 100)
+			#set($range = [$start..$end])
+			#foreach($i in $range)
+			   <option #if(${status.value} == $i) selected #end value="$i">$i</option>
+			#end	               	               	           	                               
+           </select>
+        </td>
+        <td></td>
+        <td></td>
+    </tr>
+	#end
     <tr>
         <td valign="top"><div class="row_text">$brander.getBrandElement("lms.accreditation.addCredentialCustomField.caption.Description")</div></td>
         #springBind("reportingFieldForm.creditReportingField.customFieldDescription")
@@ -34,4 +113,5 @@
         <td></td>
         <td></td>
     </tr>
+    
 </table>

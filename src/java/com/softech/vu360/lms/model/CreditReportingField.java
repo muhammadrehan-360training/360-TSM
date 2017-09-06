@@ -84,6 +84,21 @@ public class CreditReportingField implements SearchableKey,Comparable<CreditRepo
 	private String hostName = getHostName();
 	
 	
+	///LMS-22499
+	@Column(name = "ALLOW_DATATYPE")
+	private String allowed_Datatype;
+
+	@Column(name = "FIELD_LENGTHTF")
+	private Boolean field_lengthRequired = false;
+
+	@Column(name = "MINIMUM_LENGTH")
+	private Integer minimun_length;
+	
+	@Column(name = "MAXIMUM_LENGTH")
+	private Integer maximun_length;
+
+	
+	
 	public CreditReportingField()
 	{
 		setHostName(getHostName());
@@ -318,9 +333,45 @@ public class CreditReportingField implements SearchableKey,Comparable<CreditRepo
 			return false;
 		return true;
 	}
+	
+
 	@Override
 	public int compareTo(CreditReportingField field2) {
 		return (this.weight<=field2.weight)?1:-1;				
 	}
 
+	public String getAllowed_Datatype() {
+		return allowed_Datatype;
+	}
+
+	public void setAllowed_Datatype(String allowed_Datatype) {
+		this.allowed_Datatype = allowed_Datatype;
+	}
+
+	public Boolean getField_lengthRequired() {
+		if(this.field_lengthRequired==null) return false;
+		return field_lengthRequired;
+	}
+
+	public void setField_lengthRequired(Boolean field_lengthRequired) {
+		this.field_lengthRequired = field_lengthRequired;
+	}
+
+	public Integer getMinimun_length() {
+		return minimun_length;
+	}
+
+	public void setMinimun_length(Integer minimun_length) {
+		this.minimun_length = minimun_length;
+	}
+
+	public Integer getMaximun_length() {
+		return maximun_length;
+	}
+
+	public void setMaximun_length(Integer maximun_length) {
+		this.maximun_length = maximun_length;
+	}
+
+	
 }

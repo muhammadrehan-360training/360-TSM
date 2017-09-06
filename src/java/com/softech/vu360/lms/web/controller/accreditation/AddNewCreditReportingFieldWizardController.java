@@ -183,6 +183,14 @@ public class AddNewCreditReportingFieldWizardController extends AbstractWizardFo
 			singleLineTextCreditReportingFiled.setFieldLabel(creditReportingField.getFieldLabel());
 			singleLineTextCreditReportingFiled.setFieldRequired(creditReportingField.isFieldRequired());
 			
+			//LMS-22499
+			singleLineTextCreditReportingFiled.setAllowed_Datatype(creditReportingField.getAllowed_Datatype());
+			singleLineTextCreditReportingFiled.setField_lengthRequired(creditReportingField.getField_lengthRequired());
+			if(creditReportingField.getField_lengthRequired()==true){
+				singleLineTextCreditReportingFiled.setMinimun_length(creditReportingField.getMinimun_length());
+				singleLineTextCreditReportingFiled.setMaximun_length(creditReportingField.getMaximun_length());
+			}
+
 			//if(form.getEntity().equalsIgnoreCase(form.COURSE_APPROVAL)) {
 				//singleLineTextCreditReportingFiled.setCourseApproval(form.getCourseApproval());
 				singleLineTextCreditReportingFiled.setContentOwner(contentOwner);
@@ -255,6 +263,7 @@ public class AddNewCreditReportingFieldWizardController extends AbstractWizardFo
 			ssnCreditReportingFiled.setFieldEncrypted(creditReportingField.isFieldEncrypted());
 			ssnCreditReportingFiled.setFieldLabel(creditReportingField.getFieldLabel());
 			ssnCreditReportingFiled.setFieldRequired(creditReportingField.isFieldRequired());
+			
 			
 			//if(form.getEntity().equalsIgnoreCase(form.COURSE_APPROVAL)) {
 				//ssnCreditReportingFiled.setCourseApproval(form.getCourseApproval());

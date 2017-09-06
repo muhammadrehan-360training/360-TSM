@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NumberUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.validation.Errors;
@@ -23,10 +24,12 @@ import com.softech.vu360.lms.model.DateTimeCustomField;
 import com.softech.vu360.lms.model.LearnerProfile;
 import com.softech.vu360.lms.model.MultiSelectCreditReportingField;
 import com.softech.vu360.lms.model.MultiSelectCustomField;
+import com.softech.vu360.lms.model.MultipleLineTextCreditReportingfield;
 import com.softech.vu360.lms.model.NumericCreditReportingField;
 import com.softech.vu360.lms.model.NumericCusomField;
 import com.softech.vu360.lms.model.SSNCreditReportingFiled;
 import com.softech.vu360.lms.model.SSNCustomFiled;
+import com.softech.vu360.lms.model.SingleLineTextCreditReportingFiled;
 import com.softech.vu360.lms.model.TelephoneNumberCreditReportingField;
 import com.softech.vu360.lms.model.VU360User;
 import com.softech.vu360.lms.util.TextFormatter;
@@ -215,25 +218,73 @@ public class CreditReportingFormValidator implements Validator {
 						 * ()+" is required");
 						 */
 						if (originalValue == null) {
-							errors.rejectValue("creditReportingFields["
-									+ fieldindex
-									+ "].creditReportingFieldValueRef.value",
-									"custom.field.required",
-									"Please provide a value for the '"
-											+ customField.getFieldLabel()
-											+ "' field.");
+							
+							String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+							String m = "Please provide a value for the '"+ customField.getFieldLabel()+ "' field."; 
+							errors.rejectValue( s,"custom.field.required",m);
 							tempCustomField.setStatus(2);
-						} else if (StringUtils
-								.isBlank(originalValue.toString())) {
-							errors.rejectValue("creditReportingFields["
-									+ fieldindex
-									+ "].creditReportingFieldValueRef.value",
-									"custom.field.required",
-									"Please provide a value for the '"
-											+ customField.getFieldLabel()
-											+ "' field.");
+							
+						} else if (StringUtils.isBlank(originalValue.toString())) {
+							
+							String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+							String m = "Please provide a value for the '"+ customField.getFieldLabel()+ "' field."; 
+							errors.rejectValue( s,"custom.field.required",m);
 							tempCustomField.setStatus(2);
-						} else {
+							
+						} else if(customField instanceof SingleLineTextCreditReportingFiled) {
+							
+							String allowedData  = customField.getAllowed_Datatype();
+							
+							if(StringUtils.isNotEmpty(allowedData)){	
+								
+								if( "wholeNumber".equals(allowedData) 
+										&& !isWholeNumber((String) originalValue) )
+								{ 
+										String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+										String m = "Please provide a whole Number value for the '"+ customField.getFieldLabel()+ "' field."; 
+										errors.rejectValue( s,"custom.field.required",m);
+										tempCustomField.setStatus(2);
+								}
+								else if("decimal".equals(allowedData)
+										&& (! NumberUtils.isNumber((String) originalValue))){
+	
+									String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+									String m = "Please provide a decimal value for the '"+ customField.getFieldLabel()+ "' field."; 
+									errors.rejectValue( s,"custom.field.required",m);
+									tempCustomField.setStatus(2);
+									
+								}
+								else if("alphanumeric".equals(allowedData)
+										&& !((String) originalValue).matches("[A-Za-z0-9 ]+") ){
+	
+									String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+									String m = "Please provide a Alphanumeric value for the '"+ customField.getFieldLabel()+ "' field."; 
+									errors.rejectValue( s,"custom.field.required",m);
+									tempCustomField.setStatus(2);
+									
+								}else if("anyValue".equals(allowedData)
+										&& !StringUtils.isAlphanumeric((String) originalValue)){
+	
+									String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+									String m = "Please provide a Alphanumeric value for the '"+ customField.getFieldLabel()+ "' field."; 
+									//errors.rejectValue( s,"custom.field.required",m);
+									//tempCustomField.setStatus(2);
+									
+								}
+							}
+							if(customField.getField_lengthRequired()  
+									&& (! ( ((String) originalValue).length() >= customField.getMinimun_length())   ) 
+									|| (! ( ((String) originalValue).length() <= customField.getMaximun_length() ))){
+
+									String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+									String m = "Please provide a valid length data value for the '"+ customField.getFieldLabel()+ "' field."; 
+									errors.rejectValue( s,"custom.field.required",m);
+									tempCustomField.setStatus(2);
+
+							}
+							
+						} 
+						else {
 							tempCustomField.setStatus(1);
 						}
 					}
@@ -483,5 +534,39 @@ public class CreditReportingFormValidator implements Validator {
 			}
 		}
 	}
+
+	
+	private static boolean isWholeNumber(String str) {
+	    if (str == null) {
+	        return false;
+	    }
+	    
+	    int length = str.length();
+	    if (length == 0) {
+	        return false;
+	    }
+	    
+	    if(str.charAt(0) == '-')
+	    	return false;
+
+	    int i = 0;
+	    if (str.charAt(0) == '-') {
+	        if (length == 1) {
+	            return false;
+	        }
+	        i = 1;
+	    }
+	    for (; i < length; i++) {
+	        char c = str.charAt(i);
+	        if (c < '0' || c > '9') {
+	            return false;
+	        }
+	    }
+	    
+	    
+	    return true;
+	}
+
+	
 
 }
