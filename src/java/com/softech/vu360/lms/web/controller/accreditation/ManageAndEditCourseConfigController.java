@@ -379,7 +379,10 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 					
 					
 					//Min Seat Time Enforcement
-					
+                                        form.setLockPostAssessmentBeforeSeatTime(form.getCourseConfiguration().isLockPostAssessmentBeforeSeatTime());
+					form.setMinimumTimeBeforeAssessmentUnlock(form.getCourseConfiguration().getMinimumTimeBeforeAssessmentUnlock());
+                                        form.setMinimumTimeAfterFirstLaunch(form.getCourseConfiguration().getMinimumTimeAfterFirstLaunch());
+                                        form.setMessageTimeAfterFirstLaunch(form.getCourseConfiguration().getMessageTimeAfterFirstLaunch());
 					form.setPostMinimumSeatTimeBeforeAssessmentStart(form.getCourseConfiguration().getPostMinimumSeatTimeBeforeAssessmentStart()+"");
 					form.setPostMinimumSeatTimeBeforeAssessmentStartUnits(form.getCourseConfiguration().getPostMinimumSeatTimeBeforeAssessmentStartUnits());
 					form.setDisplaySeatTimeTextMessage(form.getCourseConfiguration().isDisplaySeatTimeTextMessage());
@@ -1010,8 +1013,29 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 			mycourseConfiguration.setPostGradingBehavior(form.getPostGradingBehavior());
 		}
 
-			mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(FormUtil.parseNumber(form.getPostMinimumSeatTimeBeforeAssessmentStart()));
-
+                if(!form.isLockPostAssessmentBeforeSeatTime()) {
+                    
+                    mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(false);
+                    mycourseConfiguration.setMinimumTimeAfterFirstLaunch(false);
+                    mycourseConfiguration.setMessageTimeAfterFirstLaunch("");
+                    mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(0);
+                    mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(CourseConfigForm.UNIT_MINUTES);
+                } else {
+                
+                    if(form.getMinimumTimeBeforeAssessmentUnlock()) {
+                        mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(form.getMinimumTimeBeforeAssessmentUnlock());
+                        mycourseConfiguration.setMinimumTimeAfterFirstLaunch(false);
+                        mycourseConfiguration.setMessageTimeAfterFirstLaunch("");
+                        mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(0);
+                        mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(CourseConfigForm.UNIT_MINUTES);
+                    } else if(form.getMinimumTimeAfterFirstLaunch()) {
+                        mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(false);
+                        mycourseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+                        mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(FormUtil.parseNumber(form.getPostMinimumSeatTimeBeforeAssessmentStart()));
+                        mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(form.getPostMinimumSeatTimeBeforeAssessmentStartUnits());
+                        mycourseConfiguration.setMessageTimeAfterFirstLaunch(form.getMessageTimeAfterFirstLaunch());                   
+                    }
+                }
 
 		if(!(form.getPostScoringType().isEmpty() || form.getPostScoringType()==null)){
 			mycourseConfiguration.setPostScoringType(form.getPostScoringType());
@@ -1139,9 +1163,6 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 		
 		
 		//Min Seat Time Enforcement
-		
-		mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(FormUtil.parseNumber(form.getPostMinimumSeatTimeBeforeAssessmentStart()));
-		mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(form.getPostMinimumSeatTimeBeforeAssessmentStartUnits());
 		mycourseConfiguration.setDisplaySeatTimeTextMessage(form.isDisplaySeatTimeTextMessage());
 		mycourseConfiguration.setLockPostAssessmentBeforeSeatTime(form.isLockPostAssessmentBeforeSeatTime());
 		
