@@ -2283,9 +2283,16 @@ public class AccreditationServiceImpl implements AccreditationService {
 	@Override
 	@Transactional
 	public ValidationQuestion saveValidationQuestion(ValidationQuestion validationQuestion) {
-		Language language = languageRepository.findByLanguage(validationQuestion.getCreatedBy().getVu360User().getLanguage().getLanguage());
-		validationQuestion.setLanguage(language);
-		return validationQuestionRepository.save(validationQuestion);
+            Language language;
+            if(validationQuestion.getCreatedBy() == null 
+                || validationQuestion.getCreatedBy().getVu360User().getLanguage() == null
+                || validationQuestion.getCreatedBy().getVu360User().getLanguage().getLanguage() == null) {
+                language = languageRepository.findByLanguage("en");
+            } else {
+                language = languageRepository.findByLanguage(validationQuestion.getCreatedBy().getVu360User().getLanguage().getLanguage());
+            }
+            validationQuestion.setLanguage(language);
+            return validationQuestionRepository.save(validationQuestion);
 	}
 
 	@Override
