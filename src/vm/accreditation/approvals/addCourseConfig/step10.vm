@@ -48,7 +48,6 @@
                 $('#postMinimumSeatTimeBeforeAssessmentStart').removeAttr('disabled');
                 $('#postMinimumSeatTimeBeforeAssessmentStartUnits').removeAttr('disabled');
             }
-            $("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').val('false');
             toogleMinimumTimeBeforeStartElements();
         }
 
@@ -64,6 +63,8 @@
                 $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
                 $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
             }
+            $("input:radio[name=lockAssessmentPolicy]:checked").next('input:hidden').val('true');
+            $("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').val('false');
         }
     </script>
 </head>
