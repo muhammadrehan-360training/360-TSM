@@ -258,7 +258,10 @@ public class CourseConfigForm implements ILMSBaseInterface{
 	//Learners Unique Questions
 	private List<UniqueQuestionsVO> lstUniqueQuestionsVO = new ArrayList<>();
 
-	
+	private String messageTimeAfterFirstLaunch = null;
+    private boolean minimumTimeBeforeAssessmentUnlock = Boolean.FALSE;
+    private boolean minimumTimeAfterFirstLaunch = Boolean.FALSE;
+        
 	public CourseConfigForm() {
 		System.out.println("print form bean load");
 	}
@@ -1959,4 +1962,27 @@ public class CourseConfigForm implements ILMSBaseInterface{
 		this.lstUniqueQuestionsVO = lstUniqueQuestionsVO;
 	}
 
+    public void setMinimumTimeBeforeAssessmentUnlock(boolean minimumTimeBeforeAssessmentUnlock) {
+        this.minimumTimeBeforeAssessmentUnlock = minimumTimeBeforeAssessmentUnlock;
+    }     
+    
+    public boolean getMinimumTimeBeforeAssessmentUnlock() {
+        return this.minimumTimeBeforeAssessmentUnlock;
+    }
+    
+    public void setMinimumTimeAfterFirstLaunch(boolean minimumTimeAfterFirstLaunch) {
+        this.minimumTimeAfterFirstLaunch = minimumTimeAfterFirstLaunch;
+    }
+    
+    public boolean getMinimumTimeAfterFirstLaunch() {
+        return this.minimumTimeAfterFirstLaunch;
+    }    
+    
+    public void setMessageTimeAfterFirstLaunch(String messageTimeAfterFirstLaunch) {
+        this.messageTimeAfterFirstLaunch = messageTimeAfterFirstLaunch;
+    }
+    
+    public String getMessageTimeAfterFirstLaunch() {
+        return this.messageTimeAfterFirstLaunch;
+    }
 }
