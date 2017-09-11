@@ -1007,14 +1007,18 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 			mycourseConfiguration.setPostGradingBehavior(form.getPostGradingBehavior());
 		}
 
-                if(!form.isLockPostAssessmentBeforeSeatTime()) {
+                if(form.isPostAssessmentEnabled() == false )
+                    form.setLockPostAssessmentBeforeSeatTime(false);
+                
+                if(form.isLockPostAssessmentBeforeSeatTime() == false) {
                     
                     mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(false);
                     mycourseConfiguration.setMinimumTimeAfterFirstLaunch(false);
                     mycourseConfiguration.setMessageTimeAfterFirstLaunch("");
                     mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(0);
                     mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(CourseConfigForm.UNIT_MINUTES);
-                } else {
+                    
+                } else if(form.isPostAssessmentEnabled() == true && form.isLockPostAssessmentBeforeSeatTime() == true) {
                 
                     if(form.getMinimumTimeBeforeAssessmentUnlock()) {
                         mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(form.getMinimumTimeBeforeAssessmentUnlock());
@@ -1312,33 +1316,33 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 	}	
 	}
 
-	public ModelAndView saveCourseConfig( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
-		
-		try{
-			
-			if( errors.hasErrors() ) {
-				return new ModelAndView(editCourseConfigTemplate);
-			}
+        public ModelAndView saveCourseConfig(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception {
 
-			saveCourseConfiguration(command,request);
-			
-		}catch(Exception e){
-			logger.error(e.getMessage(), e);
-		}
-					 
-		return new ModelAndView(searchCourseConfigTemplate);
-	}
+            try {
 
-	public ModelAndView publish( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
+                if (errors.hasErrors()) {
+                    return new ModelAndView(editCourseConfigTemplate);
+                }
 
-		CourseConfigForm form = (CourseConfigForm)command;
+                saveCourseConfiguration(command, request);
 
-		if(!getLcmsClientWS().invokeCourseConfigurationUpdated(getAccreditationService().getCourseConfigurationById(form.getCourseConfiguration().getId()))){
-			errors.reject("error.courseConfiguration.publish.failure", "");
-		}
-		
-		return new ModelAndView(editCourseConfigTemplate);
-	}
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+
+            return new ModelAndView(searchCourseConfigTemplate);
+        }
+
+        public ModelAndView publish(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception {
+
+            CourseConfigForm form = (CourseConfigForm) command;
+
+            if (!getLcmsClientWS().invokeCourseConfigurationUpdated(getAccreditationService().getCourseConfigurationById(form.getCourseConfiguration().getId()))) {
+                errors.reject("error.courseConfiguration.publish.failure", "");
+            }
+
+            return new ModelAndView(editCourseConfigTemplate);
+        }
 
 	public ModelAndView deleteQuestion( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
 
@@ -1367,29 +1371,29 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 	
 	}
 	
-	public ModelAndView saveAndPublish( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
+        public ModelAndView saveAndPublish(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception {
 
-		try{
-			
-			CourseConfigForm form = (CourseConfigForm)command;
+            try {
 
-			if( errors.hasErrors() ) {
-				return new ModelAndView(editCourseConfigTemplate);
-			}
+                CourseConfigForm form = (CourseConfigForm) command;
 
-			saveCourseConfiguration(command,request);
+                if (errors.hasErrors()) {
+                    return new ModelAndView(editCourseConfigTemplate);
+                }
 
-			if(!getLcmsClientWS().invokeCourseConfigurationUpdated(getAccreditationService().getCourseConfigurationById(form.getCourseConfiguration().getId()))){
-				errors.reject("error.courseConfiguration.publish.failure", "");
-			}
-			
-		}catch(Exception e){
-			logger.error(e.getMessage(), e);
-		}
-					 
-		return new ModelAndView(editCourseConfigTemplate);
-	
-	}
+                saveCourseConfiguration(command, request);
+
+                if (!getLcmsClientWS().invokeCourseConfigurationUpdated(getAccreditationService().getCourseConfigurationById(form.getCourseConfiguration().getId()))) {
+                    errors.reject("error.courseConfiguration.publish.failure", "");
+                }
+
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+
+            return new ModelAndView(editCourseConfigTemplate);
+
+        }
 
 	public ModelAndView unlinkCertificate( HttpServletRequest request, HttpServletResponse response, Object command, BindException errors ) throws Exception {
 		
@@ -1433,7 +1437,7 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 		 }
         */
 		
-		if( methodName.equals("saveCourseConfig")) {
+		if(methodName.equals("saveCourseConfig") || methodName.equals("saveAndPublish")) {
 			validator.validateStep1(form, errors);
 			validator.validateStep2(form, errors);
 			validator.validateStep3(form, errors);

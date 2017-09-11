@@ -24,6 +24,11 @@
                }
             );
             $('.numeric').numeric({allow:"."});
+            #springBind("courseConfigForm.postAssessmentEnabled")
+            #if(!$status.value)
+            #springBind("courseConfigForm.lockPostAssessmentBeforeSeatTime")
+            $('#$status.expression').attr('disabled', true);
+            #end
             toogleEnablePostAssessmentElements();
             #springBind("courseConfigForm.messageTimeAfterFirstLaunch")
             $('#wysiwyg$status.expression').change(function() {

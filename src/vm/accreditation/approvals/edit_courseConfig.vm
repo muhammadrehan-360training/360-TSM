@@ -36,6 +36,11 @@
             
             disableAllPostAssessmentElements();             
             postShowQuestionAnswerReviewChangeEvent();
+            #springBind("courseConfigForm.postAssessmentEnabled")
+            #if(!$status.value)
+            #springBind("courseConfigForm.lockPostAssessmentBeforeSeatTime")
+            $('#$status.expression').attr('disabled', true);
+            #end
             toogleEnablePostAssessmentElements();
             tooglePostNoResultMessage();            
             
@@ -581,6 +586,10 @@ function custom_alert1(output_msg, title_msg)
      $('#postEnableWeightedScoring').attr('disabled', status);
      $('#displaySeatTimeTextMessage').attr('disabled', status);
      $('#lockPostAssessmentBeforeSeatTime').attr('disabled', status);
+	 $('input:radio[name=lockAssessmentPolicy]').attr('disabled', status);
+	 $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', status);
+	 $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', status);
+
      toogleEnablePostAssessmentElements();
      $('#chk_postLockoutAssessmentActiveWindow').attr('disable', status);
      /*
@@ -605,12 +614,12 @@ function custom_alert1(output_msg, title_msg)
   }
   
   function toogleEnablePostAssessmentElements() {
-    if(!$("#lockPostAssessmentBeforeSeatTime").is(':checked')) {
+    if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && !$("#lockPostAssessmentBeforeSeatTime").is(':checked')) {
         $("input:radio[name='lockAssessmentPolicy']").removeAttr('checked');
         $("input:radio[name='lockAssessmentPolicy']").attr('disabled', "disabled");
         $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
-    } else if($("#lockPostAssessmentBeforeSeatTime").is(':checked')) {
+    } else if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked')) {
         $("input:radio[name='lockAssessmentPolicy']").removeAttr('disabled');
         $('#postMinimumSeatTimeBeforeAssessmentStart').removeAttr('disabled');
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').removeAttr('disabled');
@@ -620,13 +629,13 @@ function custom_alert1(output_msg, title_msg)
   
   function toogleMinimumTimeBeforeStartElements() {
 
-    if($("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:first").is(':checked')) { 
+    if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:first").is(':checked')) { 
         $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
-    } else if($("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:last").is(':checked')) {
+    } else if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:last").is(':checked')) {
         $('#postMinimumSeatTimeBeforeAssessmentStart').removeAttr('disabled');
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').removeAttr('disabled');
-    } else if($('#lockPostAssessmentBeforeSeatTime:not(:checked)') && $("input:radio[name='lockAssessmentPolicy']:last:not(:checked)")) {
+    } else if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $('#lockPostAssessmentBeforeSeatTime:not(:checked)') && $("input:radio[name='lockAssessmentPolicy']:last:not(:checked)")) {
         $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
     }
