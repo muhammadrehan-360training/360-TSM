@@ -261,6 +261,7 @@ public class CourseConfigForm implements ILMSBaseInterface{
 	private String messageTimeAfterFirstLaunch = null;
     private boolean minimumTimeBeforeAssessmentUnlock = Boolean.FALSE;
     private boolean minimumTimeAfterFirstLaunch = Boolean.FALSE;
+    private boolean seatTimeAcknowledgeEnabled = Boolean.FALSE;
         
 	public CourseConfigForm() {
 		System.out.println("print form bean load");
@@ -1984,5 +1985,17 @@ public class CourseConfigForm implements ILMSBaseInterface{
     
     public String getMessageTimeAfterFirstLaunch() {
         return this.messageTimeAfterFirstLaunch;
+    }
+    
+    public boolean getSeatTimeAcknowledgeEnabled() {
+        return seatTimeAcknowledgeEnabled;
+    }
+    
+    public boolean isSeatTimeAcknowledgeEnabled() {
+        return seatTimeAcknowledgeEnabled;
+    }
+
+    public void setSeatTimeAcknowledgeEnabled(boolean seatTimeAcknowledgeEnabled) {
+        this.seatTimeAcknowledgeEnabled = seatTimeAcknowledgeEnabled;
     }
 }

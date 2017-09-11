@@ -51,14 +51,23 @@
            	});
             $('#enableIdentityValidation').trigger('change');
             
-            $('#seattimeenabled').change(function(){                                
-                var status=true;
-                if($(this).is(':checked')){status=false;}
-	               $('#seattimeinhour').attr('disabled', status);
-	               $('#seattimeinmin').attr('disabled', status);	                               
+            $("input:radio[name='seatTime']").change(function(){                                
+            	var _ = $(this);
+               var status = _.is(':checked');
+               $("input:radio[name='seatTime']:not(:checked)").next('input:hidden').val('false');
+               _.next('input:hidden').val(status);
+               if($("input:radio[name='seatTime']:first:checked").length == 0 && $("input:radio[name='seatTime']:last:checked").length == 0) {
+	               $('#seattimeinhour').attr('disabled', true);
+	               $('#seattimeinmin').attr('disabled', true);             
+               } else if($("input:radio[name='seatTime']:first:checked").length > 0) {
+	               $('#seattimeinhour').attr('disabled', true);
+	               $('#seattimeinmin').attr('disabled', true);             
+               } else if($("input:radio[name='seatTime']:last:checked").length > 0){
+               	   $('#seattimeinhour').removeAttr('disabled');
+	               $('#seattimeinmin').removeAttr('disabled');
+               }                  
             });
-            $('#seattimeenabled').trigger('change');
-            
+            $("input:radio[name='seatTime']").trigger('change');
             
             $('#certificateEnabled').change(function(){
                 if($(this).is(':checked')){
@@ -175,9 +184,6 @@
                 $("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').val('false');
                 console.log($("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').attr('id'));
             });
-            $("input[type='checkbox']").on('change', function(){
-              $(this).val(this.checked ? "TRUE" : "FALSE");
-            })
         });
         
         function addRow(tableID) {
@@ -2009,11 +2015,20 @@ The name of the hidden fields is same as the name of the check box wit an unders
                                 <td width="20px"></td>
                                 <td width="48%"></td>
                             </tr>
+                    <tr>
+                        #springBind("courseConfigForm.seattimeenabled")
+    					<td><input type="radio" name="seatTime" #if ($!{status.value}) checked #end />
+                                                <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/></td>
+						<td><div class="row_text">Seat Time Enabled (Online)</div></td>
+    					<td></td>
+                        <td></td>
+					</tr>
 
 					<tr>
-                        #springBind("courseConfigForm.seattimeenabled")
-    					<td><input type="checkbox" id="$!{status.expression}" name="$!{status.expression}" #if ($!{status.value}) checked #end /><input type="hidden" id="_$!{status.expression}" name="_$!{status.expression}" value="$!{status.value}"/></td>
-						<td><div class="row_text">Seat Time Enabled</div></td>
+                        #springBind("courseConfigForm.seatTimeAcknowledgeEnabled")
+    					<td><input type="radio" name="seatTime" #if ($!{status.value}) checked #end />
+                                        <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/></td>
+						<td><div class="row_text">Seat Time Acknowledge Enabled (Offline)</div></td>
     					<td></td>
                         <td></td>
 					</tr>

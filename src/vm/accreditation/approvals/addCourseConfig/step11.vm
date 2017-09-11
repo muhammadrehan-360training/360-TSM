@@ -1027,7 +1027,13 @@
             </tr>
             <tr> #springBind("courseConfigForm.seattimeenabled")
               <td>
-                <div class="row_text"><b>Seat Time Enabled</b> </div>
+                <div class="row_text"><b>Seat Time Enabled (Online)</b> </div>
+              </td>
+              <td>$status.value</td>
+            </tr>
+            <tr> #springBind("courseConfigForm.seatTimeAcknowledgeEnabled")
+              <td>
+                <div class="row_text"><b>Seat Time Acknowledge Enabled (Offline)</b> </div>
               </td>
               <td>$status.value</td>
             </tr>

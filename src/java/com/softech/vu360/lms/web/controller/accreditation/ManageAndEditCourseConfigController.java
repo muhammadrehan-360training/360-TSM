@@ -365,18 +365,12 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 					//Seat Time
 					
 					//Max Seat Time Enforcement
-					Boolean isSeattimeenabled = form.getCourseConfiguration().isSeattimeenabled();
-					if (isSeattimeenabled != null) {
-						form.setSeattimeenabled(isSeattimeenabled);
-					} else {
-						form.setSeattimeenabled(false);
-					}
-					
-					form.setSeattimeinhour("" + form.getCourseConfiguration().getSeattimeinhour());
-					form.setSeattimeinmin("" + form.getCourseConfiguration().getSeattimeinmin());
-					form.setMessageseattimecourselaunch(form.getCourseConfiguration().getMessageseattimecourselaunch());
-					form.setMessageseattimeexceeds(form.getCourseConfiguration().getMessageseattimeexceeds());
-					
+					form.setSeattimeenabled(form.getCourseConfiguration().isSeattimeenabled());
+                                        form.setSeatTimeAcknowledgeEnabled(form.getCourseConfiguration().isSeatTimeAcknowledgeEnabled());
+                                        form.setSeattimeinhour(form.getCourseConfiguration().getSeattimeinhour() + "");
+                                        form.setSeattimeinmin(form.getCourseConfiguration().getSeattimeinmin() + "");
+                                        form.setMessageseattimecourselaunch(form.getCourseConfiguration().getMessageseattimecourselaunch());
+                                        form.setMessageseattimeexceeds(form.getCourseConfiguration().getMessageseattimeexceeds());
 					
 					//Min Seat Time Enforcement
                                         form.setLockPostAssessmentBeforeSeatTime(form.getCourseConfiguration().isLockPostAssessmentBeforeSeatTime());
@@ -1155,12 +1149,31 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 		//Seat Time
 		
 		//Max Seat Time Enforcement
-		mycourseConfiguration.setSeattimeenabled(form.isSeattimeenabled());
-		mycourseConfiguration.setSeattimeinhour( Integer.valueOf(form.getSeattimeinhour()));
-		mycourseConfiguration.setSeattimeinmin(Integer.valueOf(form.getSeattimeinmin()));
-		mycourseConfiguration.setMessageseattimecourselaunch(form.getMessageseattimecourselaunch());
-		mycourseConfiguration.setMessageseattimeexceeds(form.getMessageseattimeexceeds());
-		
+		Boolean isSeattimeenabled = form.isSeattimeenabled();
+                if (isSeattimeenabled == true) {
+                    mycourseConfiguration.setSeattimeenabled(true);
+                    mycourseConfiguration.setSeattimeinhour(0);
+                    mycourseConfiguration.setSeattimeinmin(0);
+                    mycourseConfiguration.setMessageseattimecourselaunch("");
+                    mycourseConfiguration.setMessageseattimeexceeds("");
+                } else {
+                    form.setSeattimeenabled(false);
+                }
+
+                Boolean isSeatTimeAcknowledgeEnabled = form.isSeatTimeAcknowledgeEnabled();
+                if (isSeatTimeAcknowledgeEnabled == true) {
+                    mycourseConfiguration.setSeatTimeAcknowledgeEnabled(true);
+                    mycourseConfiguration.setSeattimeinhour(form.getSeattimeinhour() != null ? Integer.parseInt(form.getSeattimeinhour()) : 0);
+                    mycourseConfiguration.setSeattimeinmin(form.getSeattimeinmin() != null ? Integer.parseInt(form.getSeattimeinmin()) : 0);
+                    mycourseConfiguration.setMessageseattimecourselaunch(form.getMessageseattimecourselaunch());
+                    mycourseConfiguration.setMessageseattimeexceeds(form.getMessageseattimeexceeds());
+                } else {
+                    mycourseConfiguration.setSeatTimeAcknowledgeEnabled(false);
+                    mycourseConfiguration.setSeattimeinhour(0);
+                    mycourseConfiguration.setSeattimeinmin(0);
+                    mycourseConfiguration.setMessageseattimecourselaunch("");
+                    mycourseConfiguration.setMessageseattimeexceeds("");
+                }
 		
 		//Min Seat Time Enforcement
 		mycourseConfiguration.setDisplaySeatTimeTextMessage(form.isDisplaySeatTimeTextMessage());
