@@ -570,6 +570,7 @@ public class AddCourseConfigWizardController extends AbstractWizardFormControlle
 			
 			//Max Seat Time Enforcement
 			courseConfiguration.setSeattimeenabled(form.isSeattimeenabled());
+                        courseConfiguration.setSeatTimeAcknowledgeEnabled(form.isSeatTimeAcknowledgeEnabled());
 			courseConfiguration.setSeattimeinhour(Integer.valueOf(form.getSeattimeinhour()));
 			courseConfiguration.setSeattimeinmin( Integer.valueOf(form.getSeattimeinmin()));
 			courseConfiguration.setMessageseattimecourselaunch(form.getMessageseattimecourselaunch());
