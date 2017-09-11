@@ -25,29 +25,30 @@
                }
             );
             $('.numeric').numeric({allow:"."});
+            $("input:radio[name='seatTime']").change(function(){    
+            	console.log('seatTime change');                            
+            	var _ = $(this);
+               var status = _.is(':checked');
+               $("input:radio[name='seatTime']:not(:checked)").next('input:hidden').val('false');
+               _.next('input:hidden').val(status);
+               if($("input:radio[name='seatTime']:first:checked").length == 0 && $("input:radio[name='seatTime']:last:checked").length == 0) {
+               		console.log('1');
+	               $('#seattimeinhour').attr('disabled', true);
+	               $('#seattimeinmin').attr('disabled', true);             
+               } else if($("input:radio[name='seatTime']:first:checked").length > 0) {
+               		console.log('2');
+	               $('#seattimeinhour').attr('disabled', true);
+	               $('#seattimeinmin').attr('disabled', true);             
+               } else if($("input:radio[name='seatTime']:last:checked").length > 0){
+               		console.log('3');
+               	   $('#seattimeinhour').removeAttr('disabled');
+	               $('#seattimeinmin').removeAttr('disabled');
+               }                  
+            });
+            $("input:radio[name='seatTime']").trigger('change');
         });
 		
-		function toggleControls(isChecked)
-		{
 		
-			var str = '';
-        var elem = document.getElementById('addCourseConfigForm').elements;
-        for(var i = 0; i < elem.length; i++)
-        {
-            //alert(elem[i].type + "---" + elem[i].name );
-			if(elem[i].id!='seattimeenabled' )
-			{
-			
-				if((elem[i].type=='checkbox' || elem[i].type=='text' || elem[i].type=='textarea' || elem[i].type=='select-one') && elem[i].id!='drpMode' )
-				{
-					elem[i].disabled=!isChecked;
-					//alert(elem[i].type);
-					
-				}
-			}
-				
-        } 
-		}
 		
 		function gotoNextStape(){
             try{
@@ -96,7 +97,7 @@ div#l-menu-back {
 </style>
 
 
-<body onload=toggleControls(document.getElementById('seattimeenabled').checked);>
+<body>
 <form id="addCourseConfigForm" name="addCourseConfigForm" method="post" action="acc_addCourseConfig.do" >
   <table id="table-layout" border="0" cellpadding="0" cellspacing="0"> <!-- Table 1 -->
 		<tr> <!-- First Block -->
@@ -172,8 +173,18 @@ div#l-menu-back {
 					</tr>
 					<tr>
                         #springBind("courseConfigForm.seattimeenabled")
-    					<td><input type="checkbox" onClick="toggleControls(this.checked);" id="seattimeenabled" name="chk" #if ($!{status.value}) checked #end /><input type="hidden" name="$!{status.expression}" value="$!{status.value}"/></td>
-						<td><div class="row_text">Seat time enabled</div></td>
+    					<td><input type="radio" name="seatTime" #if ($!{status.value}) checked #end />
+                                                <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/></td>
+						<td><div class="row_text">Seat Time Enabled (Online)</div></td>
+    					<td></td>
+                        <td></td>
+					</tr>
+
+					<tr>
+                        #springBind("courseConfigForm.seatTimeAcknowledgeEnabled")
+    					<td><input type="radio" name="seatTime" #if ($!{status.value}) checked #end />
+                                        <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/></td>
+						<td><div class="row_text">Seat Time Acknowledge Enabled (Offline)</div></td>
     					<td></td>
                         <td></td>
 					</tr>
@@ -183,10 +194,10 @@ div#l-menu-back {
                         <td></td>
 						<td>
 							#springBind("courseConfigForm.seattimeinhour")
-							<div class="row_text">Seat Time <input type="text" class="input_text_inline numeric"  name="${status.expression}" value=#if($status.value<10) "0${status.value}" #else "$!{status.value}" #end style="width:30px;"/> Hour(s)
+							<div class="row_text">Seat Time <input type="text" class="input_text_inline numeric" id="$!{status.expression}" name="${status.expression}" value=#if($status.value<10) "0${status.value}" #else "$!{status.value}" #end style="width:30px;"/> Hour(s)
 						
 								#springBind("courseConfigForm.seattimeinmin")
-								<input type="text" class="input_text_inline numeric"  name="${status.expression}" value=#if($status.value<10) "0${status.value}" #else "$!{status.value}" #end style="width:30px;"/> Minute(s)
+								<input type="text" class="input_text_inline numeric" id="$!{status.expression}" name="${status.expression}" value=#if($status.value<10) "0${status.value}" #else "$!{status.value}" #end style="width:30px;"/> Minute(s)
 							</div>
 						</td>
                         <td></td>
