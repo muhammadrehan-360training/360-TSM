@@ -6,7 +6,7 @@
             #if(${field.creditReportingFieldRef.fieldEncrypted})
                 <input type="password" class="input_text_field alphanumeric" name="$!{name}.value" id="$!{id}" value="$!field.creditReportingFieldValueRef.value" />
             #else
-                <input type="text" class="input_text_field alphanumeric" name="$!{name}.value" id="$!{id}" value="$!field.creditReportingFieldValueRef.value" />
+                <input type="text" maxlength=$!{field.creditReportingFieldRef.maximun_length} class="input_text_field alphanumeric" name="$!{name}.value" id="$!{id}" value="$!field.creditReportingFieldValueRef.value" />
             #end
             <input type="hidden" name="$!{customFieldValueIdentifire}" value="$!field.creditReportingFieldValueRef.id" />
             <input type="hidden" name="$!{customFieldIdentifire}.creditReportingFieldRef.id" value="$!field.creditReportingFieldRef.id" />
