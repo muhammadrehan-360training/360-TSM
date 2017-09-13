@@ -256,14 +256,19 @@ public class AddCourseConfigValidator implements Validator {
         }
         
         private void validatePostMinimumSeatTimeBeforeAssessmentStart(CourseConfigForm form, Errors errors) {
-            String strPostMinimumSeatTimeBeforeAssessmentStart = form.getPostMinimumSeatTimeBeforeAssessmentStart();
+            String strPostMinimumSeatTimeBeforeAssessmentStart;
+            
+            if(!form.isLockPostAssessmentBeforeSeatTime() || !form.getMinimumTimeAfterFirstLaunch())
+                return;
+            
+            strPostMinimumSeatTimeBeforeAssessmentStart = form.getPostMinimumSeatTimeBeforeAssessmentStart();
             if( NumberUtils.isNumber(strPostMinimumSeatTimeBeforeAssessmentStart) == false){
                 errors.rejectValue("courseConfiguration.postMinimumSeatTimeBeforeAssessmentStart", 
                     "error.courseConfiguration.minimumSeatTimeBeforeAssessmentUnlocks");
                 return;
             }
             int validationTimeBetweenQuestion = NumberUtils.toInt(strPostMinimumSeatTimeBeforeAssessmentStart, -1);
-            if( validationTimeBetweenQuestion < 0 || validationTimeBetweenQuestion > 100){
+            if( validationTimeBetweenQuestion <= 0 || validationTimeBetweenQuestion > 100){
                 errors.rejectValue("courseConfiguration.postMinimumSeatTimeBeforeAssessmentStart", 
                     "error.courseConfiguration.minimumSeatTimeBeforeAssessmentUnlocks.rangeViolation");
             }

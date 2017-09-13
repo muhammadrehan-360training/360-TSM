@@ -36,7 +36,12 @@
             
             disableAllPostAssessmentElements();             
             postShowQuestionAnswerReviewChangeEvent();
-            disableMinimumTimeBeforeStartElements();
+            #springBind("courseConfigForm.postAssessmentEnabled")
+            #if(!$status.value)
+            #springBind("courseConfigForm.lockPostAssessmentBeforeSeatTime")
+            $('#$status.expression').attr('disabled', true);
+            #end
+            toogleEnablePostAssessmentElements();
             tooglePostNoResultMessage();            
             
             $('#enableIdentityValidation').change(function(){
@@ -51,14 +56,23 @@
            	});
             $('#enableIdentityValidation').trigger('change');
             
-            $('#seattimeenabled').change(function(){                                
-                var status=true;
-                if($(this).is(':checked')){status=false;}
-	               $('#seattimeinhour').attr('disabled', status);
-	               $('#seattimeinmin').attr('disabled', status);	                               
+            $("input:radio[name='seatTime']").change(function(){                                
+            	var _ = $(this);
+               var status = _.is(':checked');
+               $("input:radio[name='seatTime']:not(:checked)").next('input:hidden').val('false');
+               _.next('input:hidden').val(status);
+               if($("input:radio[name='seatTime']:first:checked").length == 0 && $("input:radio[name='seatTime']:last:checked").length == 0) {
+	               $('#seattimeinhour').attr('disabled', true);
+	               $('#seattimeinmin').attr('disabled', true);             
+               } else if($("input:radio[name='seatTime']:first:checked").length > 0) {
+	               $('#seattimeinhour').attr('disabled', true);
+	               $('#seattimeinmin').attr('disabled', true);             
+               } else if($("input:radio[name='seatTime']:last:checked").length > 0){
+               	   $('#seattimeinhour').removeAttr('disabled');
+	               $('#seattimeinmin').removeAttr('disabled');
+               }                  
             });
-            $('#seattimeenabled').trigger('change');
-            
+            $("input:radio[name='seatTime']").trigger('change');
             
             $('#certificateEnabled').change(function(){
                 if($(this).is(':checked')){
@@ -146,26 +160,35 @@
             $("input[name=validationTypes]").change(function() {
             	var that = $(this);
             	var selected = that.next("input:hidden");
-        		$(this).parent().parent().find("input[name=validationTypes]:radio").each(function() {
-        			var radio = $(this);
-        			var hidden = radio.next("input:hidden");
-        			hidden.val(selected.attr("id") == hidden.attr("id") ? "true" : "false");
-        		});
-        		$('#uniqueQuestions').css('display', that.next().get(0).id == "enableDefineUniqueQuestionValidation" && that.is(":checked") ? 'block' : 'none');
+                $(this).parent().parent().find("input[name=validationTypes]:radio").each(function() {
+                    var radio = $(this);
+                    var hidden = radio.next("input:hidden");
+                    hidden.val(selected.attr("id") == hidden.attr("id") ? "true" : "false");
+                });
+                $('#uniqueQuestions').css('display', that.next().get(0).id == "enableDefineUniqueQuestionValidation" && that.is(":checked") ? 'block' : 'none');
             });
 			
-			$('#dataTable #chkAll:checkbox').change(function () {
-   				if($(this).is(":checked")) $("#dataTable input[name*=uquestionId_chk]:checkbox").attr("checked","checked");
-   				else $("#dataTable input[name*=uquestionId_chk]:checkbox").removeAttr("checked");
-			});
-			
-			$("#dataTable input[name*=uquestionId_chk]:checkbox").live("change", function () {
-   				if ($("#dataTable input[name*=uquestionId_chk]:checked").length == $("#dataTable input[name*=uquestionId_chk]").length) {
-   					$("#dataTable #chkAll:checkbox").attr("checked","checked");
-				} else { 
-					$("#dataTable #chkAll:checkbox").removeAttr("checked");
-				}
-			});
+            $('#dataTable #chkAll:checkbox').change(function () {
+                if($(this).is(":checked")) $("#dataTable input[name*=uquestionId_chk]:checkbox").attr("checked","checked");
+                else $("#dataTable input[name*=uquestionId_chk]:checkbox").removeAttr("checked");
+            });
+
+            $("#dataTable input[name*=uquestionId_chk]:checkbox").live("change", function () {
+                if ($("#dataTable input[name*=uquestionId_chk]:checked").length == $("#dataTable input[name*=uquestionId_chk]").length) {
+                    $("#dataTable #chkAll:checkbox").attr("checked","checked");
+                } else { 
+                    $("#dataTable #chkAll:checkbox").removeAttr("checked");
+                }
+            });
+
+            $("input:radio[name=lockAssessmentPolicy]").change(function() {
+                console.log("lockAssessmentPolicy change");
+                var that = $(this);
+            	var hidden = that.next('input:hidden');
+                hidden.val(that.is(':checked') ? 'true' : 'false');
+                $("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').val('false');
+                console.log($("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').attr('id'));
+            });
         });
         
         function addRow(tableID) {
@@ -368,6 +391,8 @@ function custom_alert1(output_msg, title_msg)
 			updateTextArea('$status.expression');
 			#springBind("courseConfigForm.postNoResultMessage")
 			updateTextArea('$status.expression');
+                        #springBind("courseConfigForm.messageTimeAfterFirstLaunch")
+			updateTextArea('$status.expression');
 		}
 		
 		function startSaving(){
@@ -561,6 +586,11 @@ function custom_alert1(output_msg, title_msg)
      $('#postEnableWeightedScoring').attr('disabled', status);
      $('#displaySeatTimeTextMessage').attr('disabled', status);
      $('#lockPostAssessmentBeforeSeatTime').attr('disabled', status);
+	 $('input:radio[name=lockAssessmentPolicy]').attr('disabled', status);
+	 $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', status);
+	 $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', status);
+
+     toogleEnablePostAssessmentElements();
      $('#chk_postLockoutAssessmentActiveWindow').attr('disable', status);
      /*
      if(!status && $('#chk_requireProctorValidation').attr('checked') == false){     
@@ -583,21 +613,34 @@ function custom_alert1(output_msg, title_msg)
      
   }
   
-  
-  
-  function disableMinimumTimeBeforeStartElements(){				    
-     var status=true;
-     if($('#postMinimumSeatTimeBeforeAssessmentStart-chk').is(':checked')) { 
-         status=false
-     }                    
-	
-	if(status==true)
-		$('#postMinimumSeatTimeBeforeAssessmentStart').attr('value', 0);
-	
-     ##$('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', status);
-     ##$('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', status);
-     
+  function toogleEnablePostAssessmentElements() {
+    if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && !$("#lockPostAssessmentBeforeSeatTime").is(':checked')) {
+        $("input:radio[name='lockAssessmentPolicy']").removeAttr('checked');
+        $("input:radio[name='lockAssessmentPolicy']").attr('disabled', "disabled");
+        $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
+        $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
+    } else if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked')) {
+        $("input:radio[name='lockAssessmentPolicy']").removeAttr('disabled');
+        $('#postMinimumSeatTimeBeforeAssessmentStart').removeAttr('disabled');
+        $('#postMinimumSeatTimeBeforeAssessmentStartUnits').removeAttr('disabled');
+    }
+    toogleMinimumTimeBeforeStartElements();
   }
+  
+  function toogleMinimumTimeBeforeStartElements() {
+
+    if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:first").is(':checked')) { 
+        $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
+        $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
+    } else if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:last").is(':checked')) {
+        $('#postMinimumSeatTimeBeforeAssessmentStart').removeAttr('disabled');
+        $('#postMinimumSeatTimeBeforeAssessmentStartUnits').removeAttr('disabled');
+    } else if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $('#lockPostAssessmentBeforeSeatTime:not(:checked)') && $("input:radio[name='lockAssessmentPolicy']:last:not(:checked)")) {
+        $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
+        $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
+    }
+  }
+  
   
   
   function disablePostAssessmentMaximumNoAttempt(){				    
@@ -1981,11 +2024,20 @@ The name of the hidden fields is same as the name of the check box wit an unders
                                 <td width="20px"></td>
                                 <td width="48%"></td>
                             </tr>
+                    <tr>
+                        #springBind("courseConfigForm.seattimeenabled")
+    					<td><input type="radio" name="seatTime" #if ($!{status.value}) checked #end />
+                                                <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/></td>
+						<td><div class="row_text">Seat Time Enabled (Online)</div></td>
+    					<td></td>
+                        <td></td>
+					</tr>
 
 					<tr>
-                        #springBind("courseConfigForm.seattimeenabled")
-    					<td><input type="checkbox" id="$!{status.expression}" name="$!{status.expression}" #if ($!{status.value}) checked #end /><input type="hidden" id="_$!{status.expression}" name="_$!{status.expression}" value="$!{status.value}"/></td>
-						<td><div class="row_text">Seat Time Enabled</div></td>
+                        #springBind("courseConfigForm.seatTimeAcknowledgeEnabled")
+    					<td><input type="radio" name="seatTime" #if ($!{status.value}) checked #end />
+                                        <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/></td>
+						<td><div class="row_text">Seat Time Acknowledge Enabled (Offline)</div></td>
     					<td></td>
                         <td></td>
 					</tr>
@@ -2092,59 +2144,92 @@ The name of the hidden fields is same as the name of the check box wit an unders
                                 <td width="20px"></td>
                                 <td width="48%"></td>
                             </tr>
-
-					<tr>
-                        #springBind("courseConfigForm.displaySeatTimeTextMessage")
-    					<td><input type="checkbox" id="$!{status.expression}" name="$!{status.expression}"  #if ($!{status.value}) checked #end /><input type="hidden" id="_$!{status.expression}" name="_$!{status.expression}" value="$!{status.value}"/></td>
-						<td><div class="row_text">Seat Time Text Message</div></td>
-    					<td></td>
-                        <td></td>
-					</tr>
-					<tr>
-                        #springBind("courseConfigForm.lockPostAssessmentBeforeSeatTime")
-    					<td><input type="checkbox" id="$!{status.expression}" name="$!{status.expression}" #if ($!{status.value}) checked #end /><input type="hidden" id="_$!{status.expression}" name="_$!{status.expression}" value="$!{status.value}"/></td>
-						<td><div class="row_text">Lock Post Assessment</div></td>
-    					<td></td>
-                        <td></td>
-					</tr>
-					
-					<tr>
-                       #springBind("courseConfigForm.postMinimumSeatTimeBeforeAssessmentStart")
-                       #set($intString = "$!{status.value}")
-                       
-					   #set($Integer = 0)					                          
-                       <td><input type="checkbox" id="$!{status.expression}-chk" name="$!{status.expression}-chk" 
-                       
-                       #if($intString != 'null' && $intString != '')
-	                       		#if($Integer.parseInt($intString)!=0) 
-	                       			checked 
-	                       		#end
-                       		#end  
-                       onclick="disableMinimumTimeBeforeStartElements()" /></td>
-                       <td ><div class="row_text">Minimum Seat Time Before Assessment Unlocks <input type=text class="input_text_inline numeric" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}" style="width:30px;" />
-
-                                
-                       #springBind("courseConfigForm.postMinimumSeatTimeBeforeAssessmentStartUnits")
-                       <select  style="width:80px; font-size:10px;" id="$!{status.expression}" name="$!{status.expression}" >
-                           <option #if(${status.value}=="Hours") selected #end value="Hours">Hours</option>
-                           <option  #if(${status.value}=="Minutes") selected #end value="Minutes">Minutes</option>
-					   </div></td>
-								
-								
-						<td></td>
-                        <td></td>
-								
-								
-								
-					</tr>
-					
-					
-					<tr>
-    					<td height="5"></td>
-						<td></td>
-						<td></td>
-                        <td></td>
-					</tr>
+                            <tr>
+                                #springBind("courseConfigForm.lockPostAssessmentBeforeSeatTime")
+                                <td>
+                                    <input type="checkbox" id="$!{status.expression}" name="$!{status.expression}" #if ($!{status.value}) checked #end onclick="toogleEnablePostAssessmentElements()"/>
+                                </td>
+                                <td>
+                                    <div class="row_text">Lock Post Assessment</div>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            </tr>		
+                            <tr>
+                                #springBind("courseConfigForm.minimumTimeBeforeAssessmentUnlock")					                          
+                                <td>
+                                    <input type="radio" name="lockAssessmentPolicy" #if ($!{status.value}) checked #end onclick="toogleMinimumTimeBeforeStartElements()"/>
+                                    <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/>
+                                </td>
+                                <td>
+                                    <div class="row_text">Minimum Seat Time Before Assessment Unlocks</div>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                #springBind("courseConfigForm.minimumTimeAfterFirstLaunch")
+                                <td>
+                                    <input type="radio" name="lockAssessmentPolicy"  #if ($!{status.value}) checked #end onclick="toogleMinimumTimeBeforeStartElements()"/>
+                                    <input type="hidden" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}"/>
+                                </td>
+                                <td>
+                                	<div class="row_text">
+	                                	Min. time from course start date to unlock exam
+                                	</div>
+                            	</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                            	<td></td>
+                            	<td colspan="3">
+                            		<div class="row_text">Min. time&nbsp;
+                                            #springBind("courseConfigForm.postMinimumSeatTimeBeforeAssessmentStart")
+                                            #set($intString = "$!{status.value}")
+                                            #set($Integer = 0)					                         
+                                            #if($intString != 'null' && $intString != '')
+                                                #if($Integer.parseInt($intString)!=0) 
+                                                        checked 
+                                                #end
+                                            #end    
+                                            <input type=text class="input_text_inline numeric" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}" style="width:30px;" />
+                                            #springBind("courseConfigForm.postMinimumSeatTimeBeforeAssessmentStartUnits")
+	                                    <select style="width:80px; font-size:10px;" id="$!{status.expression}" name="$!{status.expression}">
+	                                        <option #if(${status.value}=="Hours") selected #end value="Hours">Hours</option>
+	                                        <option  #if(${status.value}=="Minutes") selected #end value="Minutes">Minutes</option>
+	                                    </select>	
+                                    </div>
+                            	</td>
+                            <tr>
+                            	<td></td>
+                                <td colspan="3"><div class="row_text"><b>Message on Lock Screen:</b></div></td>
+                            </tr>
+                            <tr>
+                            	<td></td>
+                                <td colspan="3">
+                                	<div class="row_text" id="dv_messageTimeAfterFirstLaunch">
+                                            #springBind("courseConfigForm.messageTimeAfterFirstLaunch")
+	                                    <textarea id="$!{status.expression}" name="$!{status.expression}" style="display:none;">$!{status.value}</textarea>
+	                                    <script language="JavaScript">
+	                                        generate_wysiwyg('${status.expression}');
+	                                    </script>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                #springBind("courseConfigForm.displaySeatTimeTextMessage")
+                                <td><input type="checkbox" id="$!{status.expression}" name="$!{status.expression}"  #if ($!{status.value}) checked #end /><input type="hidden" id="_$!{status.expression}" name="_$!{status.expression}" value="$!{status.value}"/></td>
+                                <td><div class="row_text">Seat Time Text Message</div></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td height="5"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
 			 </tbody></table>	
              <!-- ****************************************************************************** -->
         	  </div>
