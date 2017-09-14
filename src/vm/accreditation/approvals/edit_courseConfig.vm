@@ -60,17 +60,7 @@
             	var _ = $(this);
                var status = _.is(':checked');
                $("input:radio[name='seatTime']:not(:checked)").next('input:hidden').val('false');
-               _.next('input:hidden').val(status);
-               if($("input:radio[name='seatTime']:first:checked").length == 0 && $("input:radio[name='seatTime']:last:checked").length == 0) {
-	               $('#seattimeinhour').attr('disabled', true);
-	               $('#seattimeinmin').attr('disabled', true);             
-               } else if($("input:radio[name='seatTime']:first:checked").length > 0) {
-	               $('#seattimeinhour').attr('disabled', true);
-	               $('#seattimeinmin').attr('disabled', true);             
-               } else if($("input:radio[name='seatTime']:last:checked").length > 0){
-               	   $('#seattimeinhour').removeAttr('disabled');
-	               $('#seattimeinmin').removeAttr('disabled');
-               }                  
+               _.next('input:hidden').val(status);                 
             });
             $("input:radio[name='seatTime']").trigger('change');
             
@@ -182,12 +172,10 @@
             });
 
             $("input:radio[name=lockAssessmentPolicy]").change(function() {
-                console.log("lockAssessmentPolicy change");
                 var that = $(this);
             	var hidden = that.next('input:hidden');
                 hidden.val(that.is(':checked') ? 'true' : 'false');
                 $("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').val('false');
-                console.log($("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').attr('id'));
             });
         });
         
@@ -628,7 +616,7 @@ function custom_alert1(output_msg, title_msg)
   }
   
   function toogleMinimumTimeBeforeStartElements() {
-
+    /*
     if(!$("#lockPostAssessmentBeforeSeatTime").is(':disabled') && $("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:first").is(':checked')) { 
         $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
@@ -639,6 +627,7 @@ function custom_alert1(output_msg, title_msg)
         $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
         $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
     }
+    */
   }
   
   

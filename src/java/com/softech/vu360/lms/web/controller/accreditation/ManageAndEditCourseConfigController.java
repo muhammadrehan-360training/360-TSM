@@ -1020,19 +1020,16 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
                     
                 } else if(form.isPostAssessmentEnabled() == true && form.isLockPostAssessmentBeforeSeatTime() == true) {
                 
-                    if(form.getMinimumTimeBeforeAssessmentUnlock()) {
-                        mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(form.getMinimumTimeBeforeAssessmentUnlock());
-                        mycourseConfiguration.setMinimumTimeAfterFirstLaunch(false);
-                        mycourseConfiguration.setMessageTimeAfterFirstLaunch("");
-                        mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(0);
-                        mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(CourseConfigForm.UNIT_MINUTES);
-                    } else if(form.getMinimumTimeAfterFirstLaunch()) {
-                        mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(false);
-                        mycourseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+                    mycourseConfiguration.setMinimumTimeBeforeAssessmentUnlock(form.getMinimumTimeBeforeAssessmentUnlock());
+                    mycourseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+                    
+                    if(form.getMinimumTimeBeforeAssessmentUnlock() || form.getMinimumTimeAfterFirstLaunch()) {
                         mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(FormUtil.parseNumber(form.getPostMinimumSeatTimeBeforeAssessmentStart()));
                         mycourseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(form.getPostMinimumSeatTimeBeforeAssessmentStartUnits());
-                        mycourseConfiguration.setMessageTimeAfterFirstLaunch(form.getMessageTimeAfterFirstLaunch());                   
+                        mycourseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+                        mycourseConfiguration.setMessageTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch() ? form.getMessageTimeAfterFirstLaunch() : ""); 
                     }
+                    
                 }
 
 		if(!(form.getPostScoringType().isEmpty() || form.getPostScoringType()==null)){
@@ -1153,31 +1150,12 @@ public class ManageAndEditCourseConfigController extends VU360BaseMultiActionCon
 		//Seat Time
 		
 		//Max Seat Time Enforcement
-		Boolean isSeattimeenabled = form.isSeattimeenabled();
-                if (isSeattimeenabled == true) {
-                    mycourseConfiguration.setSeattimeenabled(true);
-                    mycourseConfiguration.setSeattimeinhour(0);
-                    mycourseConfiguration.setSeattimeinmin(0);
-                    mycourseConfiguration.setMessageseattimecourselaunch("");
-                    mycourseConfiguration.setMessageseattimeexceeds("");
-                } else {
-                    form.setSeattimeenabled(false);
-                }
-
-                Boolean isSeatTimeAcknowledgeEnabled = form.isSeatTimeAcknowledgeEnabled();
-                if (isSeatTimeAcknowledgeEnabled == true) {
-                    mycourseConfiguration.setSeatTimeAcknowledgeEnabled(true);
-                    mycourseConfiguration.setSeattimeinhour(form.getSeattimeinhour() != null ? Integer.parseInt(form.getSeattimeinhour()) : 0);
-                    mycourseConfiguration.setSeattimeinmin(form.getSeattimeinmin() != null ? Integer.parseInt(form.getSeattimeinmin()) : 0);
-                    mycourseConfiguration.setMessageseattimecourselaunch(form.getMessageseattimecourselaunch());
-                    mycourseConfiguration.setMessageseattimeexceeds(form.getMessageseattimeexceeds());
-                } else {
-                    mycourseConfiguration.setSeatTimeAcknowledgeEnabled(false);
-                    mycourseConfiguration.setSeattimeinhour(0);
-                    mycourseConfiguration.setSeattimeinmin(0);
-                    mycourseConfiguration.setMessageseattimecourselaunch("");
-                    mycourseConfiguration.setMessageseattimeexceeds("");
-                }
+                mycourseConfiguration.setSeattimeenabled(form.isSeattimeenabled());
+                mycourseConfiguration.setSeatTimeAcknowledgeEnabled(form.isSeatTimeAcknowledgeEnabled());
+                mycourseConfiguration.setSeattimeinhour(form.getSeattimeinhour() != null ? Integer.parseInt(form.getSeattimeinhour()) : 0);
+                mycourseConfiguration.setSeattimeinmin(form.getSeattimeinmin() != null ? Integer.parseInt(form.getSeattimeinmin()) : 0);
+                mycourseConfiguration.setMessageseattimecourselaunch(form.getMessageseattimecourselaunch());
+                mycourseConfiguration.setMessageseattimeexceeds(form.getMessageseattimeexceeds());
 		
 		//Min Seat Time Enforcement
 		mycourseConfiguration.setDisplaySeatTimeTextMessage(form.isDisplaySeatTimeTextMessage());

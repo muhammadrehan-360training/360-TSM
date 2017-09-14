@@ -578,30 +578,29 @@ public class AddCourseConfigWizardController extends AbstractWizardFormControlle
 			
 			courseConfiguration.setLockPostAssessmentBeforeSeatTime(form.isLockPostAssessmentBeforeSeatTime());
 			//Min Seat Time Enforcement
-			if(!form.isLockPostAssessmentBeforeSeatTime()) {
-                            
+			if(form.isPostAssessmentEnabled() == false )
+                            form.setLockPostAssessmentBeforeSeatTime(false);
+                
+                        if(form.isLockPostAssessmentBeforeSeatTime() == false) {
+
                             courseConfiguration.setMinimumTimeBeforeAssessmentUnlock(false);
                             courseConfiguration.setMinimumTimeAfterFirstLaunch(false);
                             courseConfiguration.setMessageTimeAfterFirstLaunch("");
                             courseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(0);
                             courseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(CourseConfigForm.UNIT_MINUTES);
-                        } else {
 
-                            if(form.getMinimumTimeBeforeAssessmentUnlock()) {
-                                
-                                courseConfiguration.setMinimumTimeBeforeAssessmentUnlock(form.getMinimumTimeBeforeAssessmentUnlock());
-                                courseConfiguration.setMinimumTimeAfterFirstLaunch(false);
-                                courseConfiguration.setMessageTimeAfterFirstLaunch("");
-                                courseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(0);
-                                courseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(CourseConfigForm.UNIT_MINUTES);
-                            } else if(form.getMinimumTimeAfterFirstLaunch()) {
-                                
-                                courseConfiguration.setMinimumTimeBeforeAssessmentUnlock(false);
-                                courseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+                        } else if(form.isPostAssessmentEnabled() == true && form.isLockPostAssessmentBeforeSeatTime() == true) {
+
+                            courseConfiguration.setMinimumTimeBeforeAssessmentUnlock(form.getMinimumTimeBeforeAssessmentUnlock());
+                            courseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+
+                            if(form.getMinimumTimeBeforeAssessmentUnlock() || form.getMinimumTimeAfterFirstLaunch()) {
                                 courseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStart(FormUtil.parseNumber(form.getPostMinimumSeatTimeBeforeAssessmentStart()));
                                 courseConfiguration.setPostMinimumSeatTimeBeforeAssessmentStartUnits(form.getPostMinimumSeatTimeBeforeAssessmentStartUnits());
-                                courseConfiguration.setMessageTimeAfterFirstLaunch(form.getMessageTimeAfterFirstLaunch());                   
+                                courseConfiguration.setMinimumTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch());
+                                courseConfiguration.setMessageTimeAfterFirstLaunch(form.getMinimumTimeAfterFirstLaunch() ? form.getMessageTimeAfterFirstLaunch() : ""); 
                             }
+
                         }
 					
 			//LMS-12023 CHANGE START

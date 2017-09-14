@@ -57,7 +57,7 @@
         }
 
         function toogleMinimumTimeBeforeStartElements() {
-
+            /*
             if($("#lockPostAssessmentBeforeSeatTime").is(':checked') && $("input:radio[name='lockAssessmentPolicy']:first").is(':checked')) { 
                 $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
                 $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
@@ -68,6 +68,7 @@
                 $('#postMinimumSeatTimeBeforeAssessmentStart').attr('disabled', "disabled");
                 $('#postMinimumSeatTimeBeforeAssessmentStartUnits').attr('disabled', "disabled");
             }
+            */
             $("input:radio[name=lockAssessmentPolicy]:checked").next('input:hidden').val('true');
             $("input:radio[name=lockAssessmentPolicy]:not(:checked)").next('input:hidden').val('false');
         }
