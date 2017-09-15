@@ -17,5 +17,6 @@ import com.softech.vu360.lms.model.LearnerAssessmentResultStatistic;
 public interface LearnerAssessmentResultStatisticRepository extends CrudRepository<LearnerAssessmentResultStatistic, Long> {
 	
 	List<LearnerAssessmentResultStatistic> findByLearningSessionLearningSessionID(String learningSessionID);
+        public LearnerAssessmentResultStatistic findByLearnerEnrollmentId(Long id);
 
 }

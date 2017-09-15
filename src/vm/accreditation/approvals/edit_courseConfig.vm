@@ -2175,13 +2175,6 @@ The name of the hidden fields is same as the name of the check box wit an unders
                             	<td colspan="3">
                             		<div class="row_text">Min. time&nbsp;
                                             #springBind("courseConfigForm.postMinimumSeatTimeBeforeAssessmentStart")
-                                            #set($intString = "$!{status.value}")
-                                            #set($Integer = 0)					                         
-                                            #if($intString != 'null' && $intString != '')
-                                                #if($Integer.parseInt($intString)!=0) 
-                                                        checked 
-                                                #end
-                                            #end    
                                             <input type=text class="input_text_inline numeric" id="$!{status.expression}" name="$!{status.expression}" value="$!{status.value}" style="width:30px;" />
                                             #springBind("courseConfigForm.postMinimumSeatTimeBeforeAssessmentStartUnits")
 	                                    <select style="width:80px; font-size:10px;" id="$!{status.expression}" name="$!{status.expression}">

@@ -1,8 +1,11 @@
 package com.softech.vu360.lms.model;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Transient;
 
 
@@ -13,21 +16,26 @@ import javax.persistence.Transient;
  */
 @Entity
 @DiscriminatorValue("AssessmentResultStatistic")
-public class LearnerAssessmentResultStatistic extends LearnerStatistic {
-	
-	public static final int ASSESSMENT_TYPE_PRE_TEST = 0;
-	public static final int ASSESSMENT_TYPE_QUIZ = 1;
-	public static final int ASSESSMENT_TYPE_PRACTICE_TEST = 2;
-	public static final int ASSESSMENT_TYPE_POST_TEST = 3;
-	
-	// type of assessment this result is for
+public class LearnerAssessmentResultStatistic extends LearnerStatistic implements Serializable {
+
+        public enum AssessmentType {
+            QuizAssessmentResultStatistics,
+            PreAssessmentResultStatistic,
+            PracticeAssessmentResultStatistic,
+            PostAssessmentResultStatistic
+        }
+    
 	@Column(name = "ASSESSMENTTYPE")
-	private Integer assessmentType = ASSESSMENT_TYPE_PRE_TEST;
+        @Enumerated(EnumType.STRING)
+	private AssessmentType assessmentType = AssessmentType.PreAssessmentResultStatistic;
 	
 	// raw score as calculated by player
 	@Column(name = "RAWSCORE")
 	private Double rawScore = 0.0;
 	
+        @Column(name = "ASSESSMENTATTEMPTNUMBER")
+        private Integer assessmentAttemptNumber = 0;
+        
 	// total number of questions presented to learner in assessment
 	//@Column(name = "TOTALNUMBERQUESTIONSASKED")
 	@Transient
@@ -65,11 +73,11 @@ public class LearnerAssessmentResultStatistic extends LearnerStatistic {
 	@Transient
 	private  Boolean acheivedAssessmentMastery = false;
 
-	public Integer getAssessmentType() {
+	public AssessmentType getAssessmentType() {
 		return assessmentType;
 	}
 
-	public void setAssessmentType(Integer assessmentType) {
+	public void setAssessmentType(AssessmentType assessmentType) {
 		this.assessmentType = assessmentType;
 	}
 
@@ -137,4 +145,11 @@ public class LearnerAssessmentResultStatistic extends LearnerStatistic {
 		this.acheivedAssessmentMastery = acheivedAssessmentMastery;
 	}
 
+        public Integer getAssessmentAttemptNumber() {
+            return assessmentAttemptNumber;
+        }
+
+        public void setAssessmentAttemptNumber(Integer assessmentAttemptNumber) {
+            this.assessmentAttemptNumber = assessmentAttemptNumber;
+        }
 }

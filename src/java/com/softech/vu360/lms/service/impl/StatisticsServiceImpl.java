@@ -17,6 +17,7 @@ import com.softech.vu360.lms.model.DiscussionForumCourse;
 import com.softech.vu360.lms.model.Learner;
 import com.softech.vu360.lms.model.LearnerAssessmentResultStatistic;
 import com.softech.vu360.lms.model.LearnerAttendanceSummaryStatistic;
+import com.softech.vu360.lms.model.LearnerCompletionStatistics;
 import com.softech.vu360.lms.model.LearnerCourseActivity;
 import com.softech.vu360.lms.model.LearnerCourseStatistics;
 import com.softech.vu360.lms.model.LearnerEnrollment;
@@ -40,6 +41,7 @@ import com.softech.vu360.lms.repositories.LearnerCourseStatisticsRepository;
 import com.softech.vu360.lms.repositories.LearnerSCOStatisticsRepository;
 import com.softech.vu360.lms.repositories.LearnerTimeSpentStatisticRepository;
 import com.softech.vu360.lms.repositories.LearningSessionRepository;
+import com.softech.vu360.lms.repositories.LearnerCompletionStatisticsRepository;
 import com.softech.vu360.lms.service.EntitlementService;
 import com.softech.vu360.lms.service.StatisticsService;
 import com.softech.vu360.lms.service.SurveyService;
@@ -82,7 +84,9 @@ public class StatisticsServiceImpl implements StatisticsService {
 	@Inject
 	private LearnerAssessmentResultStatisticRepository learnerAssesmentResultStatisticsRepository;
 	
-	
+	@Inject
+        private LearnerCompletionStatisticsRepository learnerCompletionStatisticsRepository;
+        
 	public LearnerCourseStatistics getLearnerCourseStatisticsForLearnerEnrollment(LearnerEnrollment learnerEnrollment) {
 		log.debug("looking up courseStatistics for enrollment:"+learnerEnrollment.getKey());
 		return this.getLearnerCourseStatisticsForLearnerEnrollment(learnerEnrollment.getId());
@@ -1143,5 +1147,25 @@ public class StatisticsServiceImpl implements StatisticsService {
 		}
 		return null;
 	}
+
+        @Override
+        public LearnerCompletionStatistics getLearnerCompletionStatisticsByEnrollmentId(long id) {
+            return learnerCompletionStatisticsRepository.findByLearnerEnrollmentId(id);
+        }
+
+        @Override
+        public void updateLearnerCompletionStatistics(LearnerCompletionStatistics learnerCompletionStatistics) {
+            learnerCompletionStatisticsRepository.save(learnerCompletionStatistics);
+        }
+
+        @Override
+        public LearnerAssessmentResultStatistic getLearnerAssessmentStatisticByEnrollmentId(long id) {
+            return learnerAssesmentResultStatisticsRepository.findByLearnerEnrollmentId(id);
+        }
+        
+        @Override
+        public void updateLearnerAssessmentResultStatistic(LearnerAssessmentResultStatistic learnerAssessmentResultStatistic) {
+            learnerAssesmentResultStatisticsRepository.save(learnerAssessmentResultStatistic);
+        }
 
 }

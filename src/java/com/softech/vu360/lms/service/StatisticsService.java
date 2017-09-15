@@ -7,6 +7,8 @@ import com.softech.vu360.lms.model.AICCLearnerStatistics;
 import com.softech.vu360.lms.model.Course;
 import com.softech.vu360.lms.model.CourseApproval;
 import com.softech.vu360.lms.model.Learner;
+import com.softech.vu360.lms.model.LearnerAssessmentResultStatistic;
+import com.softech.vu360.lms.model.LearnerCompletionStatistics;
 import com.softech.vu360.lms.model.LearnerCourseActivity;
 import com.softech.vu360.lms.model.LearnerCourseStatistics;
 import com.softech.vu360.lms.model.LearnerEnrollment;
@@ -53,4 +55,8 @@ public interface StatisticsService {
 	public LearningSession updateLearningSessionForSurvey(String redirectURL, Long learningSessionId); 
 	public List<LearnerCourseStatistics> getLearnerCoursesbyEnrolmentId(Long enrollmentId);
 	//public LearnerCourseStatistics getLearnerCoursebyEnrolmentId(Long enrollmentId);
+        public void updateLearnerCompletionStatistics(LearnerCompletionStatistics learnerCompletionStatistics);
+        public void updateLearnerAssessmentResultStatistic(LearnerAssessmentResultStatistic learnerAssessmentStatistic);
+        public LearnerCompletionStatistics getLearnerCompletionStatisticsByEnrollmentId(long id);
+        public LearnerAssessmentResultStatistic getLearnerAssessmentStatisticByEnrollmentId(long id);
 }
