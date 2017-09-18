@@ -12,5 +12,6 @@ import com.softech.vu360.lms.webservice.message.lmsapi.types.enrollment.LearnerE
 public interface LmsApiEnrollmentService {
 
 	List<LearnerEnrolledCourses> enrollLearnerCourses(Map<Boolean, List<LearnerCourses>> learnerCoursesMap, Customer customer, VU360User manager, boolean notifyLearnersByEmail, DuplicatesEnrollment duplicatesEnrollment);
+	List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses> enrollLearnerCourses_(Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap, Customer customer, VU360User manager, boolean notifyLearnersByEmail, com.softech.vu360.lms.rest.model.lmsapi.enrollment.DuplicatesEnrollment duplicatesEnrollment) ;
 	
 }
