@@ -4,6 +4,7 @@ import com.softech.vu360.lms.model.LearnerAssessmentResultStatistic;
 import com.softech.vu360.lms.model.LearnerCompletionStatistics;
 import com.softech.vu360.lms.model.LearnerCourseStatistics;
 import com.softech.vu360.lms.model.LearnerEnrollment;
+import com.softech.vu360.lms.model.LearningSession;
 import com.softech.vu360.lms.service.EntitlementService;
 import com.softech.vu360.lms.service.StatisticsService;
 import com.softech.vu360.util.LearnersToBeMailedService;
@@ -27,60 +28,74 @@ public class Enrollment {
     @Autowired
     private LearnersToBeMailedService learnersToBeMailedService;
 
-    @RequestMapping(value = "/learner/enrollment/{learnerEnrollmentId}/status/complete")
+    @RequestMapping(value = "/learner/enrollment/{learningSessionId}/status/complete")
     @ResponseBody
-    public String complete(@PathVariable long learnerEnrollmentId) throws Exception {
+    public String complete(@PathVariable String learningSessionId) throws Exception {
         
-        String result;
-        LearnerEnrollment learnerEnrollment;
+        StringBuilder result;
+        
+        LearningSession session;
+        LearnerEnrollment enrollment;
         LearnerCourseStatistics courseStatistics;
 
         courseStatistics = null;
-        result = "Invalid LearnerEnrollment Id";
+        result = new StringBuilder();
         
-        learnerEnrollment = entitlementService.getLearnerEnrollmentById(learnerEnrollmentId);
+        session = statisticsService.getLearningSessionByLearningSessionId(learningSessionId);
+        
+        if(session == null)
+            result.append("Failed. Invalid LearningSession");
+        
+        enrollment = session == null ? null : entitlementService.getLearnerEnrollmentById(session.getEnrollmentId());
 
-        if(learnerEnrollment != null) {
-            result = "Invalid LearnerCourseStatistics Id";
-            courseStatistics = learnerEnrollment.getCourseStatistics();
+        if(enrollment == null)
+            result.append("Failed. No enrollment found against LearningSession");
+        
+        if(enrollment != null) {
+            result.append("Invalid LearnerCourseStatistics Id");
+            courseStatistics = enrollment.getCourseStatistics();
             if(courseStatistics != null) {
                 courseStatistics.setStatus(LearnerCourseStatistics.COMPLETED);
                 courseStatistics.setCompleted(true);
                 
-                result = "Success";
+                result.append("Success");
             }
         }
 
-        if(result.equals("Success")) {
+        if(result.toString().equals("Success")) {
             statisticsService.updateLearnerCourseStatistics(courseStatistics.getId(), courseStatistics);
-            learnersToBeMailedService.emailCourseCompletionCertificate(learnerEnrollment.getId());
+            learnersToBeMailedService.emailCourseCompletionCertificate(enrollment.getId());
         }
         
-        return result;
+        return result.toString();
     }
     
-    @RequestMapping(value = "/learner/enrollment/{learnerEnrollmentId}/status/pending")
+    @RequestMapping(value = "/learner/enrollment/{learningSessionId}/status/pending")
     @ResponseBody
-    public String pending(@PathVariable long learnerEnrollmentId) throws Exception {
+    public String pending(@PathVariable String learningSessionId) throws Exception {
         
         StringBuilder result;
         
+        LearningSession session;
         LearnerEnrollment enrollment;
         LearnerCourseStatistics courseStat;
         LearnerCompletionStatistics completionStat;
         LearnerAssessmentResultStatistic assessmentStat;
         
-        enrollment = entitlementService.getLearnerEnrollmentById(learnerEnrollmentId);
+        session = statisticsService.getLearningSessionByLearningSessionId(learningSessionId);
+        
+        enrollment = session == null ? null : entitlementService.getLearnerEnrollmentById(session.getEnrollmentId());
         courseStat = enrollment == null ? null : enrollment.getCourseStatistics();
         completionStat = enrollment == null ? null : statisticsService.getLearnerCompletionStatisticsByEnrollmentId(enrollment.getId());
         assessmentStat = enrollment == null ? null : statisticsService.getLearnerAssessmentStatisticByEnrollmentId(enrollment.getId());
 
         result = new StringBuilder();
-        result.append("Failed. Invalid LearnerEnrollment Id");
         
-        if(enrollment != null)
-            result.setLength(0);
+        if(session == null)
+            result.append("Failed. Invalid LearningSession");
         
+        if(session != null && enrollment == null)
+            result.append("Failed. No enrollment found against LearningSession");
         if(enrollment != null && courseStat == null)
             result.append("Failed. No LearnerCourseStatistics found");
         if(enrollment != null && completionStat == null)
