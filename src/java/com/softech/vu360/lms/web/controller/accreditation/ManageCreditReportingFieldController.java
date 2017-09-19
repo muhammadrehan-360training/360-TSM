@@ -228,8 +228,8 @@ public class ManageCreditReportingFieldController extends VU360BaseMultiActionCo
 			singleLineTextCreditReportingFiled.setFieldLabel(creditReportingField.getFieldLabel());
 			singleLineTextCreditReportingFiled.setFieldRequired(creditReportingField.isFieldRequired());
 			if(creditReportingField.getField_lengthRequired()==false){
-				singleLineTextCreditReportingFiled.setMaximun_length(null);
-				singleLineTextCreditReportingFiled.setMinimun_length(null);
+				singleLineTextCreditReportingFiled.setMaximun_length(0);
+				singleLineTextCreditReportingFiled.setMinimun_length(100);
 			}
 			accreditationService.saveCreditReportingField(singleLineTextCreditReportingFiled);
 		} else if (form.getFieldType().equalsIgnoreCase(form.REPORTINGFIELD_DATE)) {
