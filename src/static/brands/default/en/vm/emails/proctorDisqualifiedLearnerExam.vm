@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Email #2</title>
+
+</head>
+<body>
+    <div style="float:left;height:auto;width:97%;border-color:#ebe6e6 !Important;border:1px;border-style:solid;overflow:hidden;margin-left:15px;padding:1px;padding-bottom:10px;">
+        <div style="float:left;width:100%;font-family:Verdana;font-size:12px;margin-top:15px;margin-left:4px;margin-bottom:5px;">
+            Dear ${user.firstName},<br><br>
+            You did not meet the proctoring requirements required to complete your course '${course.courseTitle}', resulting in an unsuccessful attempt.<br><br>
+            You can retake the online exam, if you have further attempts remaining, and a proctor will evaluate your exam recording to ensure you have met all proctoring requirements. Your course would mark complete after you have satisfied these requirements.<br><br>
+
+            Thank you,<br/>
+            $brander.getBrandElement("lms.email.proctorDisqualifiedLearnerExam.fromCommonName")
+        </div>
+    </div>
+</body>
+</html> 
+

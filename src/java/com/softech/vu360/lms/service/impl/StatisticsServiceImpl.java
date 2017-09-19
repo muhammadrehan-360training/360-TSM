@@ -1160,7 +1160,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         @Override
         public LearnerAssessmentResultStatistic getLearnerAssessmentStatisticByEnrollmentId(long id) {
-            return learnerAssesmentResultStatisticsRepository.findByLearnerEnrollmentId(id);
+            return learnerAssesmentResultStatisticsRepository.findTopByLearnerEnrollmentIdOrderByIdDesc(id);
         }
         
         @Override
