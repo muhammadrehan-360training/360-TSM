@@ -52,7 +52,7 @@ public class Enrollment {
         
         enrollment = session == null ? null : entitlementService.getLearnerEnrollmentById(session.getEnrollmentId());
 
-        if(enrollment == null)
+        if(session != null && enrollment == null)
             result.append("Failed. No enrollment found against LearningSession");
         
         if(enrollment != null) {
