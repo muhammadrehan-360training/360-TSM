@@ -164,6 +164,9 @@
 		<property name="enrollmentService" ref="enrollmentService" />
 	</bean>
 
+	<bean id="jwtService" class="com.softech.vu360.lms.service.impl.JwtServiceImpl"/>
+	<bean id="lmsAuthenticationService" class="com.softech.vu360.lms.service.impl.LmsAuthenticationServiceImpl"/>
+
 	<bean id="orgGroupLearnerGroupService" class="com.softech.vu360.lms.service.impl.OrgGroupLearnerGroupServiceImpl">
 		<property name="learnerService" ref="learnerService" />
 	</bean>
