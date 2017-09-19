@@ -189,6 +189,9 @@ public class AddNewCreditReportingFieldWizardController extends AbstractWizardFo
 			if(creditReportingField.getField_lengthRequired()==true){
 				singleLineTextCreditReportingFiled.setMinimun_length(creditReportingField.getMinimun_length());
 				singleLineTextCreditReportingFiled.setMaximun_length(creditReportingField.getMaximun_length());
+			}else{
+				singleLineTextCreditReportingFiled.setMinimun_length(0);
+				singleLineTextCreditReportingFiled.setMaximun_length(100);
 			}
 
 			//if(form.getEntity().equalsIgnoreCase(form.COURSE_APPROVAL)) {

@@ -318,16 +318,18 @@ public class LearnerProfileValidator implements Validator {
 							
 						}
 					}
-					if(!StringUtils.isBlank(originalValue.toString()) && (! ( ((String) originalValue).length() >= customField.getMinimun_length())   ) 
-							|| (! ( ((String) originalValue).length() <= customField.getMaximun_length() ))){
-
-							String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
-							String m = "Please provide a valid length data value for the '"+ customField.getFieldLabel()+ "' field."; 
-							errors.rejectValue( s,"custom.field.required",m);
-							tempCustomField.setStatus(2);
-
+					if(customField.getMinimun_length()!=null && customField.getMaximun_length() !=null && originalValue!=null){
+						if(!StringUtils.isBlank(originalValue.toString()) && (! ( ((String) originalValue).length() >= customField.getMinimun_length())   ) 
+								|| (! ( ((String) originalValue).length() <= customField.getMaximun_length() ))){
+	
+								String s = "creditReportingFields["+ fieldindex+ "].creditReportingFieldValueRef.value";
+								String m = "Please provide a valid length data value for the '"+ customField.getFieldLabel()+ "' field."; 
+								errors.rejectValue( s,"custom.field.required",m);
+								tempCustomField.setStatus(2);
+	
+						}
+						
 					}
-					
 				}
 				else if(customField instanceof DateTimeCreditReportingField){
 					if(originalValue!=null){
