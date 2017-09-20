@@ -187,78 +187,6 @@ public class LmsApiEnrollmentServiceImpl implements LmsApiEnrollmentService {
 		return learnerEnrolledCoursesResponseList;
 	}
 	
-	/**
-	 * 
-	 */
-	@Override
-	public List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses> enrollLearnerCourses_(Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap, Customer customer, VU360User manager, boolean notifyLearnersByEmail, com.softech.vu360.lms.rest.model.lmsapi.enrollment.DuplicatesEnrollment duplicatesEnrollment) {
-		
-		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses> learnerEnrolledCoursesResponseList = new ArrayList<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses>();
-		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> validLearnerCoursesList = lmsApiEnrollmentValidationService.getValidLearnerCourses_(learnerCoursesMap);
-		Map<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses, String> invalidLearnerCourses = lmsApiEnrollmentValidationService.getInvalidLearnerCourses_(learnerCoursesMap);
-		if (!CollectionUtils.isEmpty(validLearnerCoursesList)) {
-			Map<Learner, List<LearnerEnrollment>> learnersNotifyEmailMap = new HashMap<>();
-			String customerCode = customer.getCustomerCode();
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-			GregorianCalendar currentDate = getTodayDate();
-			Date todayDate = currentDate.getTime();
-			for (com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses learnerCourses : validLearnerCoursesList) {
-				try {
-					String userName = learnerCourses.getUserId();
-					com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrollCourses courses = learnerCourses.getCourses();
-					List<String> courseGuidList = courses.getCourseId();
-					Date enrollmentStartDate = courses.getEnrollmentStartDate() ; //getEnrollmentStartDate_(courses, formatter);
-					Date enrollmentEndDate = courses.getEnrollmentEndDate(); // getEnrollmentEndDate_(courses, formatter);
-					Learner learner = lmsApiLearnerValidationService.getValidLearner(userName, customerCode);
-					String[] courseGuidArray = courseGuidList.toArray(new String[courseGuidList.size()]);
-					//courseCourseGrpService.refreshCoursesCache(courseGuidArray);
-					Map<String, Course> coursesMap = lmsApiCourseService.getCoursesMap(courseGuidList);
-					List<Course> validCourses = lmsApiCourseValidationService.getValidCourses(customer, coursesMap, todayDate, enrollmentStartDate, enrollmentEndDate);
-					Map<String, String> invalidCoursesMap = lmsApiCourseValidationService.getInValidCourses(customer, coursesMap, todayDate, enrollmentStartDate, enrollmentEndDate);
-					if (!CollectionUtils.isEmpty(validCourses)) {
-						List<LearnerEnrollment> learnerEnrollments = enrollLearnerIntoCourses_(customer, learner, validCourses, enrollmentStartDate, enrollmentEndDate, duplicatesEnrollment);
-						if (notifyLearnersByEmail) {
-							learnersNotifyEmailMap.put(learner, learnerEnrollments);
-						}
-					
-						com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses learnerEnrolledCourses = lmsApiEnrollmentResponseService.getLearnerEnrolledCourses_(userName, learnerEnrollments, invalidCoursesMap);
-						learnerEnrolledCoursesResponseList.add(learnerEnrolledCourses);	
-						
-					} else {
-						String errorMessage = "No course found for enrollment";
-						com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses learnerEnrolledCourses = lmsApiEnrollmentResponseService.getLearnerEnrolledCourses_(userName, errorMessage, invalidCoursesMap);
-						learnerEnrolledCoursesResponseList.add(learnerEnrolledCourses);
-					}
-					
-				} catch (Exception e) {
-					if (invalidLearnerCourses == null) {
-						invalidLearnerCourses = new HashMap<>();
-					}
-					invalidLearnerCourses.put(learnerCourses, e.getMessage());
-				}
-			} //end of for
-			
-			if (!CollectionUtils.isEmpty(learnersNotifyEmailMap)) {
-				lmsApiLearnerService.sendEmailToLearners(learnersNotifyEmailMap, manager);
-			}
-			
-		}
-		
-		if (!CollectionUtils.isEmpty(invalidLearnerCourses)) {
-			for (Map.Entry<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses, String> entry : invalidLearnerCourses.entrySet()) {
-				com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses learnerCourses = entry.getKey();
-				String errorMessage = entry.getValue();
-				String userName = learnerCourses.getUserId();
-				com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses learnerEnrolledCoursesError = lmsApiEnrollmentResponseService.getLearnerEnrolledCourses_(userName, ERROR_CODE_ONE, errorMessage);
-				learnerEnrolledCoursesResponseList.add(learnerEnrolledCoursesError);
-			}
-		}
-		
-		return learnerEnrolledCoursesResponseList;
-	}
-	
-	
-	
 	private List<LearnerEnrollment> enrollLearnerIntoCourses(Customer customer, Learner learner, List<Course> courses, Date enrollmentStartDate, Date enrollmentEndDate, DuplicatesEnrollment duplicatesEnrollment) {
 		List<LearnerEnrollment> learnerEnrollments = null;
 		if (!CollectionUtils.isEmpty(courses)) {
@@ -274,23 +202,7 @@ public class LmsApiEnrollmentServiceImpl implements LmsApiEnrollmentService {
 		}
 		return learnerEnrollments;
 	}
-
-	private List<LearnerEnrollment> enrollLearnerIntoCourses_(Customer customer, Learner learner, List<Course> courses, Date enrollmentStartDate, Date enrollmentEndDate, com.softech.vu360.lms.rest.model.lmsapi.enrollment.DuplicatesEnrollment duplicatesEnrollment) {
-		List<LearnerEnrollment> learnerEnrollments = null;
-		if (!CollectionUtils.isEmpty(courses)) {
-			learnerEnrollments = new ArrayList<>();
-			for (Course course : courses) {
-				try {
-					LearnerEnrollment learnerEnrollment = enrollLearnerIntoCourse_(customer, learner, course, enrollmentStartDate, enrollmentEndDate, duplicatesEnrollment);
-					learnerEnrollments.add(learnerEnrollment);
-				} catch (Exception e) {
-					log.error(e);
-				}
-			}
-		}
-		return learnerEnrollments;
-	}
-
+	
 	private LearnerEnrollment enrollLearnerIntoCourse(Customer customer, Learner learner, Course course, Date enrollmentStartDate, Date enrollmentEndDate, DuplicatesEnrollment duplicatesEnrollment) throws Exception {
 		LearnerEnrollment successfulLearnerEnrollment = null;
 		List<LearnerEnrollment> duplicateEnrollments = getActiveDuplicateEnrollments(learner.getId(), course.getId(), enrollmentStartDate);
@@ -319,36 +231,7 @@ public class LmsApiEnrollmentServiceImpl implements LmsApiEnrollmentService {
 		}
 		return successfulLearnerEnrollment;
 	}
-
-	private LearnerEnrollment enrollLearnerIntoCourse_(Customer customer, Learner learner, Course course, Date enrollmentStartDate, Date enrollmentEndDate, com.softech.vu360.lms.rest.model.lmsapi.enrollment.DuplicatesEnrollment duplicatesEnrollment) throws Exception {
-		LearnerEnrollment successfulLearnerEnrollment = null;
-		List<LearnerEnrollment> duplicateEnrollments = getActiveDuplicateEnrollments(learner.getId(), course.getId(), enrollmentStartDate);
-		if (!CollectionUtils.isEmpty(duplicateEnrollments)) {
-			switch(duplicatesEnrollment) {
-			    // Must use the unqualified name UPDATE, not DuplicatesEnrollment.UPDATE
-	            case UPDATE:
-	            	// Update existing learner enrollment for same course (Enrollment Start Date, Enrollment End Date, Sync. Class ID)
-					for (LearnerEnrollment enrollment : duplicateEnrollments) {
-						LearnerEnrollment learnerEnrollment = enrollmentService.loadForUpdateLearnerEnrollment(enrollment.getId());
-					    learnerEnrollment.setEnrollmentStartDate(enrollmentStartDate);
-					    learnerEnrollment.setEnrollmentEndDate(enrollmentEndDate);
-					    enrollmentService.updateEnrollment(learnerEnrollment);
-					    successfulLearnerEnrollment = learnerEnrollment;
-					}
-	            break;
-	            case IGNORE:
-	            	for (LearnerEnrollment enrollment : duplicateEnrollments) {
-	            		successfulLearnerEnrollment = enrollment;
-	            	}
-	            break;
-	            	
-			} //end of switch
-		} else {
-			successfulLearnerEnrollment = addEnrollment(learner, customer, course, enrollmentStartDate, enrollmentEndDate);
-		}
-		return successfulLearnerEnrollment;
-	}
-
+	
 	private List<LearnerEnrollment> getActiveDuplicateEnrollments(Long learnerId, Long courseId, Date newEnrollmentStartDate) {
 
 		List<LearnerEnrollment> duplicateEnrollmentList = null;
@@ -416,26 +299,8 @@ public class LmsApiEnrollmentServiceImpl implements LmsApiEnrollmentService {
 		return enrollmentStartDate;
 		
 	}
-
-	private Date getEnrollmentStartDate_(com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrollCourses courses, SimpleDateFormat formatter) throws Exception {
-		
-		String startDate = courses.getEnrollmentStartDate().toString();
-		startDate = startDate + " 00:00:00.000";
-		Date enrollmentStartDate = formatter.parse(startDate);
-		return enrollmentStartDate;
-		
-	}
-
+	
 	private Date getEnrollmentEndDate(LearnerEnrollCourses courses, SimpleDateFormat formatter) throws Exception {
-		
-		String endDate = courses.getEnrollmentEndDate().toString();
-		endDate = endDate + " 23:59:59.000";
-		Date enrollmentEndDate = formatter.parse(endDate);
-		return enrollmentEndDate;
-		
-	}
-
-	private Date getEnrollmentEndDate_(com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrollCourses courses, SimpleDateFormat formatter) throws Exception {
 		
 		String endDate = courses.getEnrollmentEndDate().toString();
 		endDate = endDate + " 23:59:59.000";

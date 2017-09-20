@@ -25,7 +25,6 @@ public class AddCustomerForm  implements ILMSBaseInterface{
 	private String phone = null;
 	private String ext = null;
 	private boolean lmsApiEnabledTF=false;
-	private boolean assignMangerTF=true;
 	
 	private String address1 = null;
 	private String address1a = null;
@@ -497,12 +496,6 @@ public class AddCustomerForm  implements ILMSBaseInterface{
 	}
 	public void setAiccInterfaceEnabled(boolean aiccInterfaceEnabled) {
 		this.aiccInterfaceEnabled = aiccInterfaceEnabled;
-	}
-	public boolean isAssignMangerTF() {
-		return assignMangerTF;
-	}
-	public void setAssignMangerTF(boolean assignMangerTF) {
-		this.assignMangerTF = assignMangerTF;
 	}
 	
 }

@@ -521,16 +521,14 @@ class CustomerServiceImpl implements CustomerService {
 			 */
 			LMSRole LMSRoleManager = null;
 			if(addCustomerForm.getCustomerType().equalsIgnoreCase("B2B")){
-				if(addCustomerForm.isAssignMangerTF()){ //LMS-22606
-					LMSRoleManager = new LMSRole();
-					LMSRoleManager.setOwner(customer);
-					LMSRoleManager.setRoleName("MANAGER");
-					LMSRoleManager.setSystemCreated(true);
-					LMSRoleManager.setRoleType(LMSRole.ROLE_TRAININGMANAGER);
-					lmsPermissions = getLMSPermissions(dist,LMSRole.ROLE_TRAININGMANAGER,LMSRoleManager);
-					LMSRoleManager.setLmsPermissions(lmsPermissions);
-					LMSRoleManager = learnerService.addRole(LMSRoleManager,customer);
-				}
+				LMSRoleManager = new LMSRole();
+				LMSRoleManager.setOwner(customer);
+				LMSRoleManager.setRoleName("MANAGER");
+				LMSRoleManager.setSystemCreated(true);
+				LMSRoleManager.setRoleType(LMSRole.ROLE_TRAININGMANAGER);
+				lmsPermissions = getLMSPermissions(dist,LMSRole.ROLE_TRAININGMANAGER,LMSRoleManager);
+				LMSRoleManager.setLmsPermissions(lmsPermissions);
+				LMSRoleManager = learnerService.addRole(LMSRoleManager,customer);
 			}
 			
 			// now add an org group
@@ -585,9 +583,7 @@ class CustomerServiceImpl implements CustomerService {
 			newUser.addLmsRole(LMSRoleLearner);
 			
 			if(addCustomerForm.getCustomerType().equalsIgnoreCase("B2B")){
-				if(addCustomerForm.isAssignMangerTF())
-					newUser.addLmsRole(LMSRoleManager);
-				
+				newUser.addLmsRole(LMSRoleManager);
 				TrainingAdministrator trainingAdministrator = new TrainingAdministrator();
 				trainingAdministrator.setManagesAllOrganizationalGroups(true);
 				trainingAdministrator.setCustomer(customer);

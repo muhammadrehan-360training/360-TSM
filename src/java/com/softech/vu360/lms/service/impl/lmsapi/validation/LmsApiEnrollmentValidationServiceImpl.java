@@ -21,8 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +34,6 @@ import com.softech.vu360.lms.service.lmsapi.validation.LmsApiEnrollmentValidatio
 import com.softech.vu360.lms.webservice.message.lmsapi.serviceoperations.enrollment.LearnerCoursesEnrollRequest;
 import com.softech.vu360.lms.webservice.message.lmsapi.types.enrollment.LearnerCourses;
 import com.softech.vu360.lms.webservice.message.lmsapi.types.enrollment.LearnerEnrollCourses;
-import com.softech.vu360.util.DateUtil;
 
 @Service
 public class LmsApiEnrollmentValidationServiceImpl implements LmsApiEnrollmentValidationService {
@@ -92,48 +89,10 @@ public class LmsApiEnrollmentValidationServiceImpl implements LmsApiEnrollmentVa
 	}
 
 	@Override
-	public Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> getLearnerCoursesMap_(List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> learnerCoursesList) {
-		
-		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> validLearnerCourses = new ArrayList<>();
-		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> invalidLearnerCourses = new ArrayList<>();
-		Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap = new LinkedHashMap<>();
-		
-		for (com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses learnerCourses : learnerCoursesList) {
-
-			try {
-				if (isValidLearnerCourses_(learnerCourses)) {
-					validLearnerCourses.add(learnerCourses);
-				} else {
-					invalidLearnerCourses.add(learnerCourses);
-				}
-			} catch (DatatypeConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		if (!CollectionUtils.isEmpty(validLearnerCourses)) {
-			learnerCoursesMap.put(Boolean.TRUE, validLearnerCourses);
-		}
-		
-		if (!CollectionUtils.isEmpty(invalidLearnerCourses)) {
-			learnerCoursesMap.put(Boolean.FALSE, invalidLearnerCourses);
-		}
-		
-		return learnerCoursesMap;
-		
-	}
-	
-	@Override
 	public List<LearnerCourses> getValidLearnerCourses(Map<Boolean, List<LearnerCourses>> learnerCoursesMap) {
 		return getLearnerCourses(learnerCoursesMap, Boolean.TRUE);
 	}
-
-	@Override
-	public List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> getValidLearnerCourses_(Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap) {
-		return getLearnerCourses_(learnerCoursesMap, Boolean.TRUE);
-	}
-
+	
 	@Override
 	public Map<LearnerCourses, String> getInvalidLearnerCourses(Map<Boolean, List<LearnerCourses>> learnerCoursesMap) {
 		Map<LearnerCourses, String> invalidLearnerCoursesMap = null;
@@ -159,33 +118,7 @@ public class LmsApiEnrollmentValidationServiceImpl implements LmsApiEnrollmentVa
 		}
 		return invalidLearnerCoursesMap;
 	}
-
-	@Override
-	public Map<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses, String> getInvalidLearnerCourses_(Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap) {
-		Map<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses, String> invalidLearnerCoursesMap = null;
-		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> invalidLearnerCoursesList = getLearnerCourses_(learnerCoursesMap, Boolean.FALSE);
-		if (!CollectionUtils.isEmpty(invalidLearnerCoursesList)) {
-			invalidLearnerCoursesMap = new HashMap<>();
-			for (com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses invalidLearnerCourses : invalidLearnerCoursesList) {
-				String userName = invalidLearnerCourses.getUserId();
-				com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrollCourses courses = invalidLearnerCourses.getCourses();
-				String errorMessage = "";
-				if (courses == null) {
-					errorMessage = "Courses element is required";
-				} else if (!isValidUsername(userName)) {
-					errorMessage = "UserId can not be empty or blank";
-				} else {
-					XMLGregorianCalendar enrollmentStartDate = DateUtil.convetDate2XMLDate(courses.getEnrollmentStartDate());
-					XMLGregorianCalendar enrollmentEndDate = DateUtil.convetDate2XMLDate(courses.getEnrollmentEndDate());
-					List<String> coursesGuid = courses.getCourseId();
-					errorMessage = getEnrollmentCredentialsErrorMessage(enrollmentStartDate, enrollmentEndDate, coursesGuid);
-				}
-				invalidLearnerCoursesMap.put(invalidLearnerCourses, errorMessage);
-			} //end of for
-		}
-		return invalidLearnerCoursesMap;
-	}
-
+	
 	@Override
 	public boolean isValidAtEnrollmentLevel(Date enrollmentStartDate, Date enrollmentEndDate, List<Date> entitlementStartDates, List<Date> entitlementEndDates) {
 		
@@ -299,27 +232,6 @@ public class LmsApiEnrollmentValidationServiceImpl implements LmsApiEnrollmentVa
 		return validLearnerCourses;
 	}
 	
-	private boolean isValidLearnerCourses_(com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses learnerCourses) throws DatatypeConfigurationException {
-		boolean validLearnerCourses = false;
-		boolean validCourseEnrollmentCredentials = false;
-		String userName = learnerCourses.getUserId();
-		com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrollCourses courses = learnerCourses.getCourses();
-		if (courses != null) {
-			GregorianCalendar gc = new GregorianCalendar();
-		    gc.setTime(courses.getEnrollmentStartDate());
-			XMLGregorianCalendar enrollmentStartDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
-			gc.setTime(courses.getEnrollmentEndDate());
-			XMLGregorianCalendar enrollmentEndDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
-			List<String> coursesGuid = courses.getCourseId();
-			validCourseEnrollmentCredentials = isValidCourseEnrollmentCredentials(enrollmentStartDate, enrollmentEndDate, coursesGuid);
-		}
-		
-		if (isValidUsername(userName) && validCourseEnrollmentCredentials) {
-			validLearnerCourses = true;
-		}
-		return validLearnerCourses;
-	}
-	
 	private boolean isValidCourseEnrollmentCredentials(XMLGregorianCalendar enrollmentStartDate, XMLGregorianCalendar enrollmentEndDate, List<String> coursesGuid) {
 		return isValidCoursesGuid(coursesGuid) &&
 			   isValidEnrollmentStartDate(enrollmentStartDate) &&
@@ -328,14 +240,6 @@ public class LmsApiEnrollmentValidationServiceImpl implements LmsApiEnrollmentVa
 	
 	private List<LearnerCourses> getLearnerCourses(Map<Boolean, List<LearnerCourses>> learnerCoursesMap, Boolean key) {
 		List<LearnerCourses> learnerCourses = null;
-		if (!CollectionUtils.isEmpty(learnerCoursesMap)) {
-			learnerCourses = learnerCoursesMap.get(key);
-		}
-		return learnerCourses;
-	}
-	
-	private List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> getLearnerCourses_(Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap, Boolean key) {
-		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> learnerCourses = null;
 		if (!CollectionUtils.isEmpty(learnerCoursesMap)) {
 			learnerCourses = learnerCoursesMap.get(key);
 		}

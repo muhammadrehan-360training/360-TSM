@@ -131,17 +131,4 @@ public class DateUtil
 	    
 	    return c.getTime();
 	}
-	
-	public static XMLGregorianCalendar convetDate2XMLDate(Date d){
-		
-	    XMLGregorianCalendar xmlDate = null;
-	    GregorianCalendar gc = new GregorianCalendar();
-	    gc.setTime(d);
-	    try{
-	      xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
-	    }catch(Exception e){
-	      e.printStackTrace();
-	    }
-		return xmlDate;
-	  } 
 }
