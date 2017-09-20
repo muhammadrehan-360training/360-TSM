@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,6 +53,8 @@ import com.softech.vu360.lms.web.controller.model.CourseGroupItem;
 import com.softech.vu360.lms.web.controller.model.EnrollmentItem;
 import com.softech.vu360.lms.web.controller.model.SubscriptionItemForm;
 import com.softech.vu360.lms.web.controller.model.SurveyItem;
+import javax.inject.Inject;
+import org.apache.velocity.VelocityContext;
 
 /**
  * @author tapas
@@ -74,7 +74,6 @@ public class LearnersToBeMailedService {
 	@Autowired
 	private VU360UserService vu360UserService;
 
-	
 	/**
 	 * Security and roles service
 	 * @see {@link SecurityAndRolesService}
@@ -823,5 +822,46 @@ public boolean SendMailToLearnersForLaunchingInvalidIp( Learner learner,String [
 	public void setSecurityAndRolesService(SecurityAndRolesService securityAndRolesService) {
 		this.securityAndRolesService = securityAndRolesService;
 	}
+
+    public void emailLearnerOnDisqualifiedByProctor(final Long enrollmentId) {
+        
+        final LearnerEnrollment le;
+        final VU360User user;
+        final Language lang;
+        final Map<String, Object> model;
+
+        final String to, from, common, subjectTemplate, subject, support, bodyTemplate, body;
+
+        le = entitlementService.getLearnerEnrollmentById(enrollmentId);
+        user = le.getLearner().getVu360User();
+
+        lang = new Language();
+        lang.setLanguage(Language.DEFAULT_LANG);
+        Brander brander = VU360Branding.getInstance().getBranderByUser(null, ProxyVOHelper.setUserProxy(user));
+        model = new HashMap<>();
+
+        bodyTemplate = brander.getBrandElement("lms.email.proctorDisqualifiedLearnerExam.body");
+
+        from = brander.getBrandElement("lms.email.proctorDisqualifiedLearnerExam.fromAddress");
+        common = brander.getBrandElement("lms.email.proctorDisqualifiedLearnerExam.fromCommonName");
+        subjectTemplate = brander.getBrandElement("lms.email.proctorDisqualifiedLearnerExam.subject");
+        support = brander.getBrandElement("lms.email.proctorDisqualifiedLearnerExam.fromCommonName");
+
+        model.put("course", le.getCourse());
+
+        subject = VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, subjectTemplate, model);
+
+        model.clear();
+
+        model.put("brander", brander);
+        model.put("user", user);
+        model.put("course", le.getCourse());
+        model.put("support", support);
+
+        to = user.getEmailAddress();
+        body = VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, bodyTemplate, model);
+
+        SendMailService.sendSMTPMessage(to, from, common, subject, body);
+    }
 	
 }

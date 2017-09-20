@@ -952,7 +952,9 @@
 
     <bean id="learnerProfileValidator" class="com.softech.vu360.lms.web.controller.validator.LearnerProfileValidator">
     </bean>
-   
+    <bean id="lmsServicesController" class="com.softech.vu360.lms.web.controller.LmsServicesController">
+        <property name="lmsAuthenticationService" ref="lmsAuthenticationService"/>
+    </bean>
     
     <!-- ======================================= LEARNER PROFILE CONTROLLER END ========================================================== -->
     
@@ -4802,6 +4804,7 @@
               /lrn_courseSampleDescription.do=lrnMyCourses
               /lrn_courseSampleCompletionReport.do=lrnMyCourses
               /lrn_courseSampleDetails.do=lrnMyCourses
+              /externalServices.do=lmsServicesController
 			  /lrn_download.do=lrnLaunchCourse
               /lrn_launchCourse.do=lrnLaunchCourse
               

@@ -7,7 +7,9 @@ import com.softech.vu360.lms.model.LearnerEnrollment;
 import com.softech.vu360.lms.model.LearningSession;
 import com.softech.vu360.lms.service.EntitlementService;
 import com.softech.vu360.lms.service.StatisticsService;
+import com.softech.vu360.lms.web.controller.learner.LaunchCourseController;
 import com.softech.vu360.util.LearnersToBeMailedService;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +30,9 @@ public class Enrollment {
     @Autowired
     private LearnersToBeMailedService learnersToBeMailedService;
 
-    @RequestMapping(value = "/learner/enrollment/{learningSessionId}/status/complete")
+    private static final Logger LOGGER = Logger.getLogger(Enrollment.class.getName());
+    
+    @RequestMapping(value = "/learner/session/{learningSessionId}/enrollment/status/complete")
     @ResponseBody
     public String complete(@PathVariable String learningSessionId) throws Exception {
         
@@ -48,7 +52,7 @@ public class Enrollment {
         
         enrollment = session == null ? null : entitlementService.getLearnerEnrollmentById(session.getEnrollmentId());
 
-        if(enrollment == null)
+        if(session != null && enrollment == null)
             result.append("Failed. No enrollment found against LearningSession");
         
         if(enrollment != null) {
@@ -58,6 +62,7 @@ public class Enrollment {
                 courseStatistics.setStatus(LearnerCourseStatistics.COMPLETED);
                 courseStatistics.setCompleted(true);
                 
+                result.setLength(0);
                 result.append("Success");
             }
         }
@@ -70,7 +75,7 @@ public class Enrollment {
         return result.toString();
     }
     
-    @RequestMapping(value = "/learner/enrollment/{learningSessionId}/status/pending")
+    @RequestMapping(value = "/learner/session/{learningSessionId}/enrollment/status/pending")
     @ResponseBody
     public String pending(@PathVariable String learningSessionId) throws Exception {
         
@@ -124,7 +129,7 @@ public class Enrollment {
             statisticsService.updateLearnerCourseStatistics(courseStat.getId(), courseStat);
             statisticsService.updateLearnerCompletionStatistics(completionStat);
             statisticsService.updateLearnerAssessmentResultStatistic(assessmentStat);
-            
+            learnersToBeMailedService.emailLearnerOnDisqualifiedByProctor(enrollment.getId());
             result.setLength(0);
             result.append("Success");
         }
