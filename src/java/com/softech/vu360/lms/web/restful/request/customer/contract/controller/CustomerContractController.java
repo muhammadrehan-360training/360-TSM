@@ -15,12 +15,16 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softech.vu360.lms.web.restful.request.AbstractResponse;
 import com.softech.vu360.lms.web.restful.request.customer.contract.add.types.AddCustomerContractRequest;
 import com.softech.vu360.lms.web.restful.request.customer.contract.add.types.LmsAddCustomerContractRequest;
@@ -35,6 +39,13 @@ import com.softech.vu360.lms.web.restful.request.security.RestRequestSecurityMan
 import com.softech.vu360.lms.web.restful.request.validator.AbstractRequestValidator;
 import com.softech.vu360.lms.web.restful.request.validator.RequestValidator;
 
+
+
+/**
+ * 
+ * @author haider.ali
+ *
+ */
 @Controller
 public class CustomerContractController {
 
@@ -59,7 +70,23 @@ public class CustomerContractController {
 		System.out.println(applicationContext);
 	}
 	
-	// http://localhost:8080/lms/restful/customer/contract/add
+	/**
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/customer/createContract", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<String> createCustomerContract(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		ModelAndView mod =  addCustomerContract( request,  response);
+		AddCustomerContractResponse res=(AddCustomerContractResponse) mod.getModel().get("AddCustomerContractResponse");
+		ObjectMapper om = new ObjectMapper();
+		String s = om.writeValueAsString(res);
+		return new ResponseEntity<String>(s, HttpStatus.OK);
+	}
+	
 	
 	@RequestMapping(value = "/customer/contract/add", method = RequestMethod.POST)
 	public ModelAndView addCustomerContract(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -97,11 +124,17 @@ public class CustomerContractController {
 			ServletInputStream servletInputStream = request.getInputStream();
 			LmsAddCustomerContractRequest lmsAddCustomerContractRequest = null;
 			if (servletInputStream != null) {
-				if (contentType.equalsIgnoreCase("application/json")) {
+				if (contentType.startsWith("application/json")) {
 					String requestJsonString = IOUtils.toString(servletInputStream);
 					JSONObject requestJsonObj = JSONObject.fromObject(requestJsonString);
 					lmsAddCustomerContractRequest = (LmsAddCustomerContractRequest)JSONObject.toBean(requestJsonObj, LmsAddCustomerContractRequest.class);
-				} else if (contentType.equalsIgnoreCase("application/xml")) {
+				}
+				else if (contentType.equalsIgnoreCase("application/json")) {
+					String requestJsonString = IOUtils.toString(servletInputStream);
+					JSONObject requestJsonObj = JSONObject.fromObject(requestJsonString);
+					lmsAddCustomerContractRequest = (LmsAddCustomerContractRequest)JSONObject.toBean(requestJsonObj, LmsAddCustomerContractRequest.class);
+				}
+				else if (contentType.equalsIgnoreCase("application/xml")) {
 					String requestXml = IOUtils.toString(servletInputStream);
 				}
 			}
