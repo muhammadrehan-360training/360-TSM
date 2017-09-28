@@ -69,7 +69,7 @@ public class LearnerAssessmentResultStatistic extends LearnerStatistic implement
 	private  Boolean passedAssessment = false;
 	// did the learner acheive mastery for this assessment?
 	
-        @Column(name = "ACHEIVEDASSESSMENTMASTERY")
+        @Column(name = "ACHIEVEDASSESSMENTMASTERYTF")
         private Boolean acheivedAssessmentMastery = Boolean.FALSE;
 
 	public AssessmentType getAssessmentType() {
