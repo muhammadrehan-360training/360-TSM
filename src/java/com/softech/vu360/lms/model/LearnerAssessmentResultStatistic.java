@@ -69,9 +69,8 @@ public class LearnerAssessmentResultStatistic extends LearnerStatistic implement
 	private  Boolean passedAssessment = false;
 	// did the learner acheive mastery for this assessment?
 	
-	//@Column(name = "ACHEIVEDASSESSMENTMASTERY")
-	@Transient
-	private  Boolean acheivedAssessmentMastery = false;
+        @Column(name = "ACHEIVEDASSESSMENTMASTERY")
+        private Boolean acheivedAssessmentMastery = Boolean.FALSE;
 
 	public AssessmentType getAssessmentType() {
 		return assessmentType;
