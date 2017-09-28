@@ -10,18 +10,16 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -236,6 +234,121 @@ public class LmsApiRestFulCustomerService {
 		
 	}
 	
+	/**
+	 *
+	 * @param request
+	 * @param token
+	 * @param req
+	 * @param res
+	 * @return
+	 * @throws Exception
+	 */
+    @RequestMapping(value = "/addNewCustomer", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, String> save(@RequestBody AddCustomerRestfulRequest request, @RequestHeader(value = "token") String token, HttpServletRequest req, HttpServletResponse res) throws Exception{
+
+        Map<String,String> responseData = new HashMap<>();
+    	log.debug("Add Customer Restful Request start");
+		final String REQUEST_END_MESSAGE = "Add Customer restful Request end";
+		AddCustomerResponse response = new AddCustomerResponse();
+		RegisterCustomers registerCustomers = new RegisterCustomers();
+		List<RegisterCustomer> registerCustomerList = new ArrayList<RegisterCustomer>();
+		Customers customers = request.getCustomers();
+		BigInteger resellerId = request.getResellerId();
+		boolean assigneMangerTF = request.isAssignManger();
+
+		List<Customer> customerList = customers.getCustomer();
+		try {
+
+			Distributor distributor = distributorService.getDistributorById(new Long(resellerId.longValue()));
+			if(distributor == null){
+		    	String errorMessage = "Distributor not found";
+		    	response.setTransactionResultMessage(errorMessage);
+				RegisterCustomer registerCustomerError = getRegisterCustomerError(ERROR_CODE_ONE, errorMessage, "");
+				registerCustomerList.add(registerCustomerError);
+				responseData.put("status", "false");
+				responseData.put("responsejson", getjsonString(response));
+				return responseData;
+
+			}
+			for (Customer customer: customerList) {
+				com.softech.vu360.lms.model.Customer newCustomer = null;
+				try {
+					if (addCustomerValidation(customer)) {
+						newCustomer = createNewCustomer(assigneMangerTF, distributor, customer);
+					}
+				} catch (Exception e) {
+					String errorMessage = e.getMessage();
+					String userName = customer.getUserName();
+					RegisterCustomer registerCustomerError = getRegisterCustomerError(ERROR_CODE_ONE, errorMessage, userName);
+					registerCustomerList.add(registerCustomerError);
+					log.info("***************"+errorMessage+"***************");
+					continue;
+				}
+
+				if (newCustomer != null) {
+
+					String generatedApiKey = null;
+					boolean apiEnabled = customer.isApiEnabled();
+					if (apiEnabled) {
+						String environment = "Development";
+						String privilegeType = null;
+						Map<String, String> privilegeMap = new HashMap<String, String>();
+						privilegeMap.put("type", privilegeType);
+
+					    JSONObject json = new JSONObject();
+					    json.accumulateAll(privilegeMap);
+
+					    generatedApiKey = generateApiKey();
+					    //String privilege = json.toString();
+
+					    String privilege = null;
+
+						//LmsApiCustomer lmsApiCustomer = addLmsApiCustomer(newCustomer, environment, privilegeType);
+					    try {
+					    	LmsApiCustomer lmsApiCustomer = addLmsApiCustomer(newCustomer, generatedApiKey, environment, privilege);
+					    } catch (Exception e) {
+					    	String errorMessage = e.getMessage();
+							String userName = customer.getUserName();
+							RegisterCustomer registerCustomerError = getRegisterCustomerError(ERROR_CODE_ONE, errorMessage, userName);
+							registerCustomerList.add(registerCustomerError);
+							log.info("***************"+errorMessage+"***************");
+							continue;
+					    }
+
+					}
+
+					String customerCode = newCustomer.getCustomerCode();
+					RegisterCustomer registerCustomer = getRegisterCustomer(customer, customerCode);
+					if (generatedApiKey != null) {
+						registerCustomer.setApiKey(generatedApiKey);
+					}
+					registerCustomerList.add(registerCustomer);
+				}
+
+			}	//end of for()
+		} catch (Exception e) {
+			response.setTransactionResult(TransactionResultType.FAILURE);
+			response.setTransactionResultMessage(e.getMessage());
+			log.info("***************"+e.getMessage()+"***************");
+
+			responseData.put("status", "false");
+			responseData.put("responsejson", getjsonString(response));
+			return responseData;
+		}
+
+		response.setTransactionResult(TransactionResultType.SUCCESS);
+		response.setTransactionResultMessage(REQUEST_END_MESSAGE);
+		registerCustomers.setRegisterCustomer(registerCustomerList);
+		response.setRegisterCustomers(registerCustomers);
+
+		responseData.put("status", "true");
+		responseData.put("responsejson", getjsonString(response));
+
+		return  responseData ;
+
+    }
+
 	private LmsApiDistributor findLmsApiDistributorByKey(String apiKey) throws Exception {
 		LmsApiDistributor lmsApiDistributor = lmsApiDistributorService.findApiKey(apiKey);
 		return lmsApiDistributor;

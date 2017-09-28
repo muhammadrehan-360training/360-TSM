@@ -1,14 +1,18 @@
 package com.softech.vu360.lms.rest;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softech.vu360.lms.model.Customer;
 import com.softech.vu360.lms.model.VU360User;
+import com.softech.vu360.lms.rest.model.lmsapi.customer.AddCustomerRestfulRequest;
 import com.softech.vu360.lms.rest.model.lmsapi.customer.RegisterCustomer;
 import com.softech.vu360.lms.rest.model.lmsapi.enrollment.DuplicatesEnrollment;
 import com.softech.vu360.lms.rest.model.lmsapi.enrollment.EnrollmentLearnerRestfulRequest;
@@ -35,7 +40,7 @@ import com.softech.vu360.lms.service.lmsapi.validation.LmsApiAuthenticationServi
 import com.softech.vu360.lms.service.lmsapi.validation.LmsApiEnrollmentValidationService;
 
 /**
- * 
+ *
  * @author haider.ali
  *
  */
@@ -44,7 +49,7 @@ import com.softech.vu360.lms.service.lmsapi.validation.LmsApiEnrollmentValidatio
 public class LmsApiRestFullEnrollmentService {
 
 	private static final Logger logger = LogManager.getLogger(LmsApiRestFullEnrollmentService.class);
-	
+
 	@Autowired
 	private LmsApiAuthenticationService lmsApiAuthenticationService;
 	@Autowired
@@ -60,22 +65,23 @@ public class LmsApiRestFullEnrollmentService {
 	private CustomerService customerService;
 
 	/**
-	 * 
+	 *
 	 * @param request
 	 * @return
 	 * @throws Exception
+	 * @Deprecated
 	 */
 	@RequestMapping(value = "/learner/enroll", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<LearnerCoursesEnrollResponse> enrollUser(@RequestBody EnrollmentLearnerRestfulRequest request) throws Exception {
-		
+
 		logger.info("Request received at " + getClass().getName() + " for learner enrollment");
 		HttpStatus requestStatus = HttpStatus.BAD_REQUEST;
-		
+
 		LearnerCoursesEnrollResponse response = null;
 		boolean notifyLearnersByEmail = request.isNotifyLearnersByEmail();
 		String customerCode = request.getCustomerCode();
-		
+
 		DuplicatesEnrollment duplicatesEnrollment = request.getDuplicatesEnrollment();
 		if (duplicatesEnrollment == null) {
 			duplicatesEnrollment = DuplicatesEnrollment.UPDATE;
@@ -83,37 +89,94 @@ public class LmsApiRestFullEnrollmentService {
 		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> learnerCoursesList = request.getLearnerCourses();
 		try {
 			Customer customer = customerService.getCustomerByCustomerCode(customerCode);
-			
+
 			if(customer == null){
 				response = new LearnerCoursesEnrollResponse();
-		    	String errorMessage = "Customer not found";
-		    	response.setTransactionResultMessage(errorMessage);
+				String errorMessage = "Customer not found";
+				response.setTransactionResultMessage(errorMessage);
 				//RegisterCustomer registerCustomerError = getRegisterCustomerError(ERROR_CODE_ONE, errorMessage, "");
 				//registerCustomerList.add(registerCustomerError);
 				return new ResponseEntity<LearnerCoursesEnrollResponse>(response, HttpStatus.BAD_REQUEST);
 			}
 
-			
+
 			String customerGuid = customer.getCustomerGUID();
 			VU360User manager = vu360UserService.getUserByGUID(customerGuid);
 			validate(request, manager, customerCode);
-			
+
 			Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap = lmsApiEnrollmentValidationService.getLearnerCoursesMap_(learnerCoursesList);
 			List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses> learnerEnrolledCoursesResponseList = lmsApiEnrollmentService.enrollLearnerCourses_(learnerCoursesMap, customer, manager, notifyLearnersByEmail, duplicatesEnrollment);
 			response = lmsApiEnrollmentResponseService.getLearnerCoursesEnrollResponse_(learnerEnrolledCoursesResponseList);
 			requestStatus = HttpStatus.ACCEPTED;
-			
+
 		} catch (Exception e) {
 			String errorMessage = e.getMessage();
 			response = lmsApiEnrollmentResponseService.getLearnerCoursesEnrollResponse_(errorMessage);
 			requestStatus = HttpStatus.BAD_REQUEST;
 			response.setTransactionResultMessage(errorMessage);
 		}
-		
+
 		return new ResponseEntity(response, requestStatus);
-		
+
 	}
-	
+
+
+	/**
+	 *
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/addEnrollment", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public Map<String, String> addEnrollment(@RequestBody EnrollmentLearnerRestfulRequest request, @RequestHeader(value = "token") String token, HttpServletRequest req, HttpServletResponse res) throws Exception{
+
+		logger.info("Request received at " + getClass().getName() + " for add learner enrollment");
+		Map<String,String> responseData = new HashMap<>();
+
+		LearnerCoursesEnrollResponse response = null;
+		boolean notifyLearnersByEmail = request.isNotifyLearnersByEmail();
+		String customerCode = request.getCustomerCode();
+
+		DuplicatesEnrollment duplicatesEnrollment = request.getDuplicatesEnrollment();
+		if (duplicatesEnrollment == null) {
+			duplicatesEnrollment = DuplicatesEnrollment.UPDATE;
+		}
+		List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses> learnerCoursesList = request.getLearnerCourses();
+		try {
+			Customer customer = customerService.getCustomerByCustomerCode(customerCode);
+
+			if(customer == null){
+				response = new LearnerCoursesEnrollResponse();
+				String errorMessage = "Customer not found";
+				response.setTransactionResultMessage(errorMessage);
+				responseData.put("status", "false");
+				responseData.put("responsejson", getjsonString(response ));
+				return responseData;
+			}
+
+
+			String customerGuid = customer.getCustomerGUID();
+			VU360User manager = vu360UserService.getUserByGUID(customerGuid);
+			validate(request, manager, customerCode);
+
+			Map<Boolean, List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerCourses>> learnerCoursesMap = lmsApiEnrollmentValidationService.getLearnerCoursesMap_(learnerCoursesList);
+			List<com.softech.vu360.lms.rest.model.lmsapi.enrollment.LearnerEnrolledCourses> learnerEnrolledCoursesResponseList = lmsApiEnrollmentService.enrollLearnerCourses_(learnerCoursesMap, customer, manager, notifyLearnersByEmail, duplicatesEnrollment);
+			response = lmsApiEnrollmentResponseService.getLearnerCoursesEnrollResponse_(learnerEnrolledCoursesResponseList);
+		} catch (Exception e) {
+			String errorMessage = e.getMessage();
+			response = lmsApiEnrollmentResponseService.getLearnerCoursesEnrollResponse_(errorMessage);
+			response.setTransactionResultMessage(errorMessage);
+			responseData.put("status", "false");
+			responseData.put("responsejson", getjsonString(response ));
+		}
+
+		responseData.put("status", "true");
+		responseData.put("responsejson", getjsonString(response ));
+		return responseData;
+
+	}
+
 	private boolean validate(EnrollmentLearnerRestfulRequest request, VU360User manager, String customerCode) throws Exception{
 		boolean notifyLearnersByEmail = request.isNotifyLearnersByEmail();
 		List<LearnerCourses> learnerCoursesList = request.getLearnerCourses();
@@ -122,35 +185,35 @@ public class LmsApiRestFullEnrollmentService {
 				throw new Exception("No manager found for customer: " + customerCode);
 			}
 		}
-		
+
 		if (CollectionUtils.isEmpty(learnerCoursesList)) {
 			throw new Exception("LearnerCourses element is required and must not be empty");
 		}
 		return true;
 	}
-	
+
 	public void setLmsApiAuthenticationService(LmsApiAuthenticationService lmsApiAuthenticationService) {
 		this.lmsApiAuthenticationService = lmsApiAuthenticationService;
 	}
-	
+
 	public void setLmsApiEnrollmentService(LmsApiEnrollmentService lmsApiEnrollmentService) {
 		this.lmsApiEnrollmentService = lmsApiEnrollmentService;
 	}
-	
+
 	public void setVu360UserService(VU360UserService vu360UserService) {
 		this.vu360UserService = vu360UserService;
 	}
-	
+
 	public void setLmsApiEnrollmentValidationService(LmsApiEnrollmentValidationService lmsApiEnrollmentValidationService) {
 		this.lmsApiEnrollmentValidationService = lmsApiEnrollmentValidationService;
 	}
-	
+
 	public void setLmsApiEnrollmentResponseService(LmsApiEnrollmentResponseService lmsApiEnrollmentResponseService) {
 		this.lmsApiEnrollmentResponseService = lmsApiEnrollmentResponseService;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param o
 	 * @return
 	 */
@@ -211,7 +274,7 @@ public class LmsApiRestFullEnrollmentService {
 
 	
 	*//**
-	 * 
+	 *
 	 * @param webProxy
 	 * @return
 	 * @throws Exception
