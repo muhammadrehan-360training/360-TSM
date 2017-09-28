@@ -8,6 +8,7 @@ import com.softech.vu360.lms.model.Course;
 import com.softech.vu360.lms.model.CourseApproval;
 import com.softech.vu360.lms.model.Learner;
 import com.softech.vu360.lms.model.LearnerAssessmentResultStatistic;
+import com.softech.vu360.lms.model.LearnerAttendanceSummaryStatistic;
 import com.softech.vu360.lms.model.LearnerCompletionStatistics;
 import com.softech.vu360.lms.model.LearnerCourseActivity;
 import com.softech.vu360.lms.model.LearnerCourseStatistics;
@@ -59,4 +60,6 @@ public interface StatisticsService {
         public void updateLearnerAssessmentResultStatistic(LearnerAssessmentResultStatistic learnerAssessmentStatistic);
         public LearnerCompletionStatistics getLearnerCompletionStatisticsByEnrollmentId(long id);
         public LearnerAssessmentResultStatistic getLearnerAssessmentStatisticByEnrollmentId(long id);
+        public LearnerAttendanceSummaryStatistic getLearnerAttendanceStatisticByEnrollmentId(long id);
+        public void updateLearnerAttendanceStatistic(LearnerAttendanceSummaryStatistic learnerAttendanceStatistic);
 }
