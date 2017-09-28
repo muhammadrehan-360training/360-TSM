@@ -116,7 +116,6 @@ public class Enrollment {
             completionStat.setCourseComplete(Boolean.FALSE);
             completionStat.setPostAssessmentMasteryAchieved(Boolean.FALSE);
 
-
             assessmentStat.setAcheivedAssessmentMastery(Boolean.FALSE);
             assessmentStat.setAssessmentAttemptNumber(0);
 
