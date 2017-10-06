@@ -1,13 +1,13 @@
 package com.softech.vu360.lms.rest;
 
 import com.softech.vu360.lms.model.LearnerAssessmentResultStatistic;
+import com.softech.vu360.lms.model.LearnerAttendanceSummaryStatistic;
 import com.softech.vu360.lms.model.LearnerCompletionStatistics;
 import com.softech.vu360.lms.model.LearnerCourseStatistics;
 import com.softech.vu360.lms.model.LearnerEnrollment;
 import com.softech.vu360.lms.model.LearningSession;
 import com.softech.vu360.lms.service.EntitlementService;
 import com.softech.vu360.lms.service.StatisticsService;
-import com.softech.vu360.lms.web.controller.learner.LaunchCourseController;
 import com.softech.vu360.util.LearnersToBeMailedService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +31,7 @@ public class Enrollment {
     private LearnersToBeMailedService learnersToBeMailedService;
 
     private static final Logger LOGGER = Logger.getLogger(Enrollment.class.getName());
+    private static final String POST_ASSESSMENT = "PostAssessment";
     
     @RequestMapping(value = "/learner/session/{learningSessionId}/enrollment/status/complete")
     @ResponseBody
@@ -86,6 +87,7 @@ public class Enrollment {
         LearnerCourseStatistics courseStat;
         LearnerCompletionStatistics completionStat;
         LearnerAssessmentResultStatistic assessmentStat;
+        LearnerAttendanceSummaryStatistic attendanceStat;
         
         session = statisticsService.getLearningSessionByLearningSessionId(learningSessionId);
         
@@ -93,7 +95,8 @@ public class Enrollment {
         courseStat = enrollment == null ? null : enrollment.getCourseStatistics();
         completionStat = enrollment == null ? null : statisticsService.getLearnerCompletionStatisticsByEnrollmentId(enrollment.getId());
         assessmentStat = enrollment == null ? null : statisticsService.getLearnerAssessmentStatisticByEnrollmentId(enrollment.getId());
-
+        attendanceStat = enrollment == null ? null : statisticsService.getLearnerAttendanceStatisticByEnrollmentId(enrollment.getId());
+        
         result = new StringBuilder();
         
         if(session == null)
@@ -107,19 +110,22 @@ public class Enrollment {
             result.append("Failed. No LearnerCompletionStatistics found");
         if(enrollment != null && assessmentStat == null)
             result.append("Failed. No LearnerAssessmentResultStatistic found");
+        if(enrollment != null && attendanceStat == null)
+            result.append("Failed. No LearnerAttendanceStatistic found");
         
-        if(enrollment != null && courseStat != null && completionStat != null && assessmentStat != null) {
+        if(enrollment != null && courseStat != null && completionStat != null && assessmentStat != null && attendanceStat != null) {
             
             courseStat.setStatus(LearnerCourseStatistics.IN_PROGRESS);
-            courseStat.setCompleted(false);
+            courseStat.setCompleted(Boolean.FALSE);
 
             completionStat.setCourseComplete(Boolean.FALSE);
             completionStat.setPostAssessmentMasteryAchieved(Boolean.FALSE);
 
-
             assessmentStat.setAcheivedAssessmentMastery(Boolean.FALSE);
             assessmentStat.setAssessmentAttemptNumber(0);
 
+            attendanceStat.setBookmarkGUID(POST_ASSESSMENT);
+            
             result.setLength(0);
             result.append("OK");
         }
@@ -129,6 +135,7 @@ public class Enrollment {
             statisticsService.updateLearnerCourseStatistics(courseStat.getId(), courseStat);
             statisticsService.updateLearnerCompletionStatistics(completionStat);
             statisticsService.updateLearnerAssessmentResultStatistic(assessmentStat);
+            statisticsService.updateLearnerAttendanceStatistic(attendanceStat);
             learnersToBeMailedService.emailLearnerOnDisqualifiedByProctor(enrollment.getId());
             result.setLength(0);
             result.append("Success");
