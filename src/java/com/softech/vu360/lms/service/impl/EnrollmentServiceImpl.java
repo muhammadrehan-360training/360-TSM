@@ -1,5 +1,6 @@
 package com.softech.vu360.lms.service.impl;
 
+import com.google.common.collect.HashBiMap;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -894,7 +895,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 				return returnVal;
 		    } else {
 				OrgGroupEntitlement oge = entitlementService.getMaxAvaiableOrgGroupEntitlementByLearner(user.getLearner(), entitlement.getId());
-				if (oge != null && !oge.hasAvailableSeats(1)) {
+				if (oge != null && !oge.getCustomerEntitlement().hasAvailableSeats(1)) {
 				    returnVal.put("error", "lms.learnerenrollment.error.seatsNotAvailable");
 				    return returnVal;
 				}
@@ -2339,7 +2340,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
      * learner in Learner Group from Self Registration Invitations
      */
     @Override
-    public void enrollLearnerToLearnerGroupItems(VU360User vu360User, LearnerGroup learnerGroup) {
+    public Map<Object, Object> enrollLearnerToLearnerGroupItems(VU360User vu360User, LearnerGroup learnerGroup) {
+        Map<Object, Object> result = new HashMap<>();
 		if (CollectionUtils.isNotEmpty(learnerGroup.getLearnerGroupItems())) {
 		    for (LearnerGroupItem item : learnerGroup.getLearnerGroupItems()) {
 				Course course = item.getCourse();
@@ -2356,11 +2358,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 						}
 				    }
 				    if (doEnrollment) {
-				    	this.selfEnrollTheLearner(vu360User, course.getId().toString(), synClassId);
+				    	result.putAll(this.selfEnrollTheLearner(vu360User, course.getId().toString(), synClassId));
 				    }
 				}
 		    }
 		}
+                return result;
     }
 
     public Map<Long, CourseGroupView> transformListIntoMap(List<CourseGroupView> list) {

@@ -13,183 +13,192 @@ import com.softech.vu360.lms.model.VU360ReportExecutionSummary;
 import com.softech.vu360.lms.model.VU360ReportField;
 import com.softech.vu360.lms.model.VU360ReportFilterOperand;
 import com.softech.vu360.lms.web.controller.ILMSBaseInterface;
+import java.util.Iterator;
 
-public class ReportForm  implements ILMSBaseInterface{
-	private static final long serialVersionUID = 1L;
-	public ReportForm() {
+public class ReportForm implements ILMSBaseInterface {
 
-	}
-	private String userMode="";
-	/**
-	 * @return the userMode
-	 */
-	public String getUserMode() {
-		return userMode;
-	}
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * @param userMode the userMode to set
-	 */
-	public void setUserMode(String userMode) {
-		this.userMode = userMode;
-	}
+    private String userMode = "";
+    private String startDate = "";
+    private String endDate = "";
+    private String courseId = "";
+    private String startTime = "";
+    private String endTime = "";
+    
+    private VU360Report currentReport;
+    private VU360ReportExecutionSummary currentReportLastExecutionSummary;
+    private VU360Report reportSummaryEdit;
+    private List<VU360ReportField> reportFieldsEdit;
+    private Map<String, List<VU360ReportFilterOperand>> operandMap;
+    private List<ReportFilterItem> reportFilterItems = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(ReportFilterItem.class));
+    private ArrayList<VU360Report> favourites;
+    private List<VU360Report> ownedReports = null;
+    private Map<String, ArrayList<VU360Report>> reportMap;
+    
+    public ReportForm() {
+        
+    }
 
-	private List<VU360Report> ownedReports = null;
+    /**
+     * @return the userMode
+     */
+    public String getUserMode() {
+        return userMode;
+    }
 
-	public List<VU360Report> getOwnedReports() {
-		return ownedReports;
-	}
+    /**
+     * @param userMode the userMode to set
+     */
+    public void setUserMode(String userMode) {
+        this.userMode = userMode;
+    }
 
-	public void setOwnedReports(List<VU360Report> ownedReports) {
-		this.ownedReports = ownedReports;
-	}
-	
-	public void addOwnedReport(VU360Report report){
-		if(ownedReports==null)
-			ownedReports = new ArrayList<VU360Report>();
-		ownedReports.add(report);
-	}
-	
-	/**
-	 * Helper method to get the reports organised by category 
-	 * and Favorite reports to be used in left menu.
-	 */
-	public Map<String, ArrayList<VU360Report>> getReportsByCategory(){
-		Map<String, ArrayList<VU360Report>> reportMap = new LinkedHashMap<String,ArrayList<VU360Report>>();
-		if(ownedReports!=null){
-			for(VU360Report report:ownedReports){
-				String category = report.getCategory();
-				if(reportMap.containsKey(category)){
-					ArrayList<VU360Report> categoryReports = reportMap.get(category);
-					categoryReports.add(report);
-				}else{
-					ArrayList<VU360Report> categoryReports = new ArrayList<VU360Report>();
-					categoryReports.add(report);
-					reportMap.put(category, categoryReports);
-				}
-			}
-		}
-		return reportMap;
-	}
-	
-	public ArrayList<VU360Report> getFavouriteReports(){
-		ArrayList<VU360Report> favourites = new ArrayList<VU360Report>();
-		if(ownedReports!=null){
-			for(VU360Report report:ownedReports){
-				if(report.isFavorite())
-					favourites.add(report);
-			}
-		}
-		return favourites;
-	}
-	
-	private VU360Report currentReport;
+    public List<VU360Report> getOwnedReports() {
+        return ownedReports;
+    }
 
-	public VU360Report getCurrentReport() {
-		return currentReport;
-	}
+    public void setOwnedReports(List<VU360Report> ownedReports) {
+        this.ownedReports = ownedReports;
+        
+        resetFavoriteAndCategoryReports();
+    }
 
-	public void setCurrentReport(VU360Report currentReport) {
-		this.currentReport = currentReport;
-	}
-	
-	private VU360ReportExecutionSummary currentReportLastExecutionSummary;
+    public void addOwnedReport(VU360Report report) {
+        if (ownedReports == null) {
+            ownedReports = new ArrayList<>();
+        }
+        ownedReports.add(report);
+        
+        resetFavoriteAndCategoryReports();
+    }
 
-	public VU360ReportExecutionSummary getCurrentReportLastExecutionSummary() {
-		return currentReportLastExecutionSummary;
-	}
+    /**
+     * Helper method to get the reports organized by category and Favorite
+     * reports to be used in left menu.
+     * @return 
+     */
+    public Map<String, ArrayList<VU360Report>> getReportsByCategory() {
+        return reportMap;
+    }
 
-	public void setCurrentReportLastExecutionSummary(
-			VU360ReportExecutionSummary currentReportLastExecutionSummary) {
-		this.currentReportLastExecutionSummary = currentReportLastExecutionSummary;
-	}
-	
-	private VU360Report reportSummaryEdit;
+    public ArrayList<VU360Report> getFavouriteReports() {
+        return favourites;
+    }
 
-	public VU360Report getReportSummaryEdit() {
-		return reportSummaryEdit;
-	}
+    public VU360Report getCurrentReport() {
+        return currentReport;
+    }
 
-	public void setReportSummaryEdit(VU360Report reportSummaryEdit) {
-		this.reportSummaryEdit = reportSummaryEdit;
-	}
-	
-	private List<VU360ReportField> reportFieldsEdit;
+    public void setCurrentReport(VU360Report currentReport) {
+        this.currentReport = currentReport;
+    }
 
-	public List<VU360ReportField> getReportFieldsEdit() {
-		return reportFieldsEdit;
-	}
+    public VU360ReportExecutionSummary getCurrentReportLastExecutionSummary() {
+        return currentReportLastExecutionSummary;
+    }
 
-	public void setReportFieldsEdit(List<VU360ReportField> reportFieldsEdit) {
-		this.reportFieldsEdit = reportFieldsEdit;
-	}
-	
-	private Map<String, List<VU360ReportFilterOperand>> operandMap;
+    public void setCurrentReportLastExecutionSummary(
+            VU360ReportExecutionSummary currentReportLastExecutionSummary) {
+        this.currentReportLastExecutionSummary = currentReportLastExecutionSummary;
+    }
 
-	public Map<String, List<VU360ReportFilterOperand>> getOperandMap() {
-		return operandMap;
-	}
+    public VU360Report getReportSummaryEdit() {
+        return reportSummaryEdit;
+    }
 
-	public void setOperandMap(Map<String, List<VU360ReportFilterOperand>> operandMap) {
-		this.operandMap = operandMap;
-	}
-	
-	private List<ReportFilterItem> reportFilterItems = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(ReportFilterItem.class));
+    public void setReportSummaryEdit(VU360Report reportSummaryEdit) {
+        this.reportSummaryEdit = reportSummaryEdit;
+    }
 
-	public List<ReportFilterItem> getReportFilterItems() {
-		return reportFilterItems;
-	}
+    public List<VU360ReportField> getReportFieldsEdit() {
+        return reportFieldsEdit;
+    }
 
-	public void setReportFilterItems(List<ReportFilterItem> reportFilterItems) {
-		this.reportFilterItems = reportFilterItems;
-	}
+    public void setReportFieldsEdit(List<VU360ReportField> reportFieldsEdit) {
+        this.reportFieldsEdit = reportFieldsEdit;
+    }
 
-	
-	private String startDate = "";
-	private String endDate = "";
-	private String courseId = "";
-	private String startTime = "";
-	private String endTime = "";
-	
-	public String getStartDate() {
-		return startDate;
-	}
+    public Map<String, List<VU360ReportFilterOperand>> getOperandMap() {
+        return operandMap;
+    }
 
-	public void setStartDate(String startDate) {
-		this.startDate = startDate;
-	}
+    public void setOperandMap(Map<String, List<VU360ReportFilterOperand>> operandMap) {
+        this.operandMap = operandMap;
+    }
 
-	public String getEndDate() {
-		return endDate;
-	}
+    public List<ReportFilterItem> getReportFilterItems() {
+        return reportFilterItems;
+    }
 
-	public void setEndDate(String endDate) {
-		this.endDate = endDate;
-	}
+    public void setReportFilterItems(List<ReportFilterItem> reportFilterItems) {
+        this.reportFilterItems = reportFilterItems;
+    }
 
-	public String getCourseId() {
-		return courseId;
-	}
+    public String getStartDate() {
+        return startDate;
+    }
 
-	public void setCourseId(String courseId) {
-		this.courseId = courseId;
-	}
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
 
-	public String getStartTime() {
-		return startTime;
-	}
+    public String getEndDate() {
+        return endDate;
+    }
 
-	public void setStartTime(String startTime) {
-		this.startTime = startTime;
-	}
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
 
-	public String getEndTime() {
-		return endTime;
-	}
+    public String getCourseId() {
+        return courseId;
+    }
 
-	public void setEndTime(String endTime) {
-		this.endTime = endTime;
-	}
-	
-	
+    public void setCourseId(String courseId) {
+        this.courseId = courseId;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
+    private void resetFavoriteAndCategoryReports() {
+        
+        favourites = new ArrayList<>();
+        if (ownedReports != null) {
+            ownedReports.stream().filter((report) -> (report.isFavorite())).forEachOrdered((report) -> {
+                favourites.add(report);
+            });
+        }
+        
+        reportMap = new LinkedHashMap<>();
+        if (ownedReports != null) {
+            ownedReports.forEach((report) -> {
+                String category = report.getCategory();
+                if (reportMap.containsKey(category)) {
+                    ArrayList<VU360Report> categoryReports = reportMap.get(category);
+                    categoryReports.add(report);
+                } else {
+                    ArrayList<VU360Report> categoryReports;
+                    categoryReports = new ArrayList<>();
+                    categoryReports.add(report);
+                    reportMap.put(category, categoryReports);
+                }
+            });
+        }
+    }
+    
 }

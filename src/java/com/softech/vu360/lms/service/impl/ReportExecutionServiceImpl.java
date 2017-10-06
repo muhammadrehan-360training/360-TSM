@@ -77,7 +77,8 @@ public class ReportExecutionServiceImpl implements ReportExecutionService {
 	private static final String SQLTEMPLATE_FOR_PROCTOR = "vm/reportsql/accr_RegulatorReportForProctor.vm";
 	private static final String SQLTEMPLATE_FOR_PROCTOR_CONCURRENT_LEARNER = "vm/reportsql/accr_RegulatorRptProctor_ConcurrentLnr.vm";
 	private static final String SQLTEMPLATE_FOR_LEARNER_PERFORMANCE_BY_COURSE_COMPREHENSIVE = "vm/reportsql/mgr_PrfLearnerByCourseComp.vm";
-	
+	private static final String SQLTEMPLATE_FOR_CUSTOMER_REPORT = "vm/reportsql/admin_customersreport.vm";
+        
 	private Logger log = Logger.getLogger(ReportExecutionServiceImpl.class);
 	
 	@Inject
@@ -662,7 +663,7 @@ public class ReportExecutionServiceImpl implements ReportExecutionService {
 			}
 
 		}
-		else if ( report.getMode().trim().equalsIgnoreCase(VU360Report.ADMINISTRATOR_MODE) ) {
+		else if ( report.getMode().trim().equalsIgnoreCase(VU360Report.ADMINISTRATOR_MODE) && !report.getSqlTemplateUri().equalsIgnoreCase(SQLTEMPLATE_FOR_CUSTOMER_REPORT)) {
 			// add distributor ID from group of distributor IDs or none if manage all distributors
 			log.debug("isGlobalAdministrator="+user.getLmsAdministrator().isGlobalAdministrator());
 			if(user.getLmsAdministrator().isGlobalAdministrator())
