@@ -35,6 +35,7 @@ import com.softech.vu360.lms.model.WebLinkCourse;
 import com.softech.vu360.lms.model.WebinarCourse;
 import com.softech.vu360.lms.repositories.AICCLearnerStatisticsRepository;
 import com.softech.vu360.lms.repositories.LearnerAssessmentResultStatisticRepository;
+import com.softech.vu360.lms.repositories.LearnerAttendanceStatisticRepository;
 import com.softech.vu360.lms.repositories.LearnerAttendanceSummaryStatisticRepository;
 import com.softech.vu360.lms.repositories.LearnerCourseActivityRepository;
 import com.softech.vu360.lms.repositories.LearnerCourseStatisticsRepository;
@@ -86,6 +87,9 @@ public class StatisticsServiceImpl implements StatisticsService {
 	
 	@Inject
         private LearnerCompletionStatisticsRepository learnerCompletionStatisticsRepository;
+        
+        @Inject
+        private LearnerAttendanceStatisticRepository learnerAttendanceStatisticRepository;
         
 	public LearnerCourseStatistics getLearnerCourseStatisticsForLearnerEnrollment(LearnerEnrollment learnerEnrollment) {
 		log.debug("looking up courseStatistics for enrollment:"+learnerEnrollment.getKey());
@@ -1167,5 +1171,14 @@ public class StatisticsServiceImpl implements StatisticsService {
         public void updateLearnerAssessmentResultStatistic(LearnerAssessmentResultStatistic learnerAssessmentResultStatistic) {
             learnerAssesmentResultStatisticsRepository.save(learnerAssessmentResultStatistic);
         }
+        
+        @Override
+        public LearnerAttendanceSummaryStatistic getLearnerAttendanceStatisticByEnrollmentId(long id) {
+            return learnerAttendanceStatisticRepository.findTopByLearnerEnrollmentIdOrderByIdDesc(id);
+        }
 
+        @Override
+        public void updateLearnerAttendanceStatistic(LearnerAttendanceSummaryStatistic learnerAttendanceStatistic) {
+            learnerAttendanceStatisticRepository.save(learnerAttendanceStatistic);
+        }
 }

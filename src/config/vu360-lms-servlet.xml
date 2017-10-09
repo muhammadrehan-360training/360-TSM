@@ -3110,6 +3110,7 @@
         <property name="editReportTemplate" value="administrator/reports/editReport"/>
         <property name="filterReportTemplate" value="administrator/reports/filterReport"/>
         <property name="htmlViewTemplate" value="administrator/reports/htmlLastExecuted"/>
+        <property name="failureTemplate" value="administrator/customer/redirectSearchMember"/>
     </bean>
     
     <bean id="accreditationReports" class="com.softech.vu360.lms.web.controller.accreditation.ReportController">
