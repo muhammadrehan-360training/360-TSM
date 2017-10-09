@@ -33,6 +33,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMethodException;
 
 import com.softech.vu360.lms.exception.ReportNotExecutableException;
+import com.softech.vu360.lms.model.Customer;
+import com.softech.vu360.lms.model.Distributor;
 import com.softech.vu360.lms.model.VU360Report;
 import com.softech.vu360.lms.model.VU360ReportExecutionSummary;
 import com.softech.vu360.lms.model.VU360ReportField;
@@ -41,11 +43,19 @@ import com.softech.vu360.lms.model.VU360ReportFilterOperand;
 import com.softech.vu360.lms.model.VU360ReportFilterValue;
 import com.softech.vu360.lms.service.ReportExecutionService;
 import com.softech.vu360.lms.service.ReportingConfigurationService;
+import com.softech.vu360.lms.util.UserPermissionChecker;
 import com.softech.vu360.lms.web.controller.VU360BaseMultiActionController;
 import com.softech.vu360.lms.web.controller.model.ReportFilterItem;
 import com.softech.vu360.lms.web.controller.model.ReportForm;
 import com.softech.vu360.lms.web.controller.validator.ReportConfigurationValidator;
+import com.softech.vu360.lms.web.filter.AdminSearchType;
+import com.softech.vu360.lms.web.filter.VU360UserAuthenticationDetails;
+import com.softech.vu360.lms.web.filter.VU360UserMode;
 import com.softech.vu360.util.RedirectUtils;
+import java.math.BigInteger;
+import java.text.ParseException;
+import java.util.function.BiConsumer;
+import org.springframework.security.core.Authentication;
 
 /**
  * @author Somnath
@@ -64,8 +74,19 @@ public class ReportController extends VU360BaseMultiActionController{
 	private String editReportTemplate;
 	private String filterReportTemplate;
 	private String htmlViewTemplate;
-	
-	Logger log=Logger.getLogger(ReportController.class);
+        private String failureTemplate = null;
+
+        private final String DEFAULT_START_DATE = "2001-01-01 00:00:00";
+        private final String DB_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+        private final String INPUT_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
+        private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("MM/dd/yyyy");
+        private final String TIMESTAMP_OF_ALMOST_AN_HOUR = " 23:59:59";
+        private final String TIMESTAMP_OF_ZERO_SECONDS = " 00:00:00";
+
+        final String SQLTEMPLATE_FOR_CUSTOMER_REPORT = "vm/reportsql/admin_customersreport.vm";
+
+        Logger log = Logger.getLogger(ReportController.class);
+
 	public ReportController() {
 		super();
 	}
@@ -90,55 +111,71 @@ public class ReportController extends VU360BaseMultiActionController{
 			super.initBinder(request, binder);
 	}
 	
-	protected void onBind(HttpServletRequest request, Object command, String methodName) throws Exception {
-		ReportForm form = (ReportForm)command;
-		com.softech.vu360.lms.vo.VU360User owner = (com.softech.vu360.lms.vo.VU360User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		String userMode = "Administrator";
-		
-		
-		
-		if(!form.getUserMode().equalsIgnoreCase(userMode)){
-			form.setUserMode(userMode);
-			List<VU360Report> ownedReports = reportingConfigurationService.getOwnedReports(owner.getId(),userMode);
-			//List<VU360Report> ownedReports = reportingConfigurationService.getOwnedReports(owner);
-			form.setOwnedReports(ownedReports);
-			//set the current report as current report
-			List<VU360Report> favourites = form.getFavouriteReports();
-			if(favourites.size()>0)
-				form.setCurrentReport(favourites.get(0));
-			else{
-				Map<String, ArrayList<VU360Report>> reportMap = form.getReportsByCategory();
-				if(!reportMap.keySet().isEmpty()){
-					while(reportMap.keySet().iterator().hasNext()){
-						String category = reportMap.keySet().iterator().next();
-						ArrayList<VU360Report> categoryReports = reportMap.get(category);
-						if(categoryReports.size()>0){
-							form.setCurrentReport(categoryReports.get(0));
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		if(methodName.equals("saveReportFilters")){
-			String strHasFilters = request.getParameter("hasFilters");
-			if(!StringUtils.isBlank(strHasFilters)){
-				if(strHasFilters.equals("false")){
-					form.getReportFilterItems().clear();
-				}else{
-					List<ReportFilterItem> filterItems = form.getReportFilterItems();
-					
-//					for(int i=filterItems.size()-1; i>=0; i--){
-//						ReportFilterItem item = filterItems.get(i);
-//						if(item.isMarkedForDeletion())
-//							filterItems.remove(i);
-//					}
-					
-				}
-			}
-		}
-	}
+        protected void onBind(HttpServletRequest request, Object command, String methodName) throws Exception {
+            ReportForm form = (ReportForm) command;
+            com.softech.vu360.lms.vo.VU360User owner = (com.softech.vu360.lms.vo.VU360User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String userMode = "Administrator";
+
+            if (!form.getUserMode().equalsIgnoreCase(userMode)) {
+                
+                form.setUserMode(userMode);
+                
+                List<VU360Report> ownedReports = reportingConfigurationService.getOwnedReports(owner.getId(), userMode);
+                form.setOwnedReports(ownedReports);
+                
+                // filter favorites report by permission
+                form.getFavouriteReports().removeIf(r -> "Performance".equals(r.getCategory()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0004", owner, request.getSession(true)));
+                form.getFavouriteReports().removeIf(r -> "Customers".equals(r.getCategory()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0056", owner, request.getSession(true)));
+
+                // filter categories of report by permission
+                form.getReportsByCategory().entrySet().removeIf(r -> "Performance".equals(r.getKey()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0004", owner, request.getSession(true)));
+                form.getReportsByCategory().entrySet().removeIf(r -> "Customers".equals(r.getKey()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0056", owner, request.getSession(true)));
+                
+                //set the current report as current report
+                List<VU360Report> favourites = form.getFavouriteReports();
+                if (favourites.size() > 0) {
+                    form.setCurrentReport(favourites.get(0));
+                } else {
+                    Map<String, ArrayList<VU360Report>> reportMap = form.getReportsByCategory();
+                    if (!reportMap.keySet().isEmpty()) {
+                        while (reportMap.keySet().iterator().hasNext()) {
+                            String category = reportMap.keySet().iterator().next();
+                            ArrayList<VU360Report> categoryReports = reportMap.get(category);
+                            if (categoryReports.size() > 0) {
+                                form.setCurrentReport(categoryReports.get(0));
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+
+                // filter favorites report by permission
+                form.getFavouriteReports().removeIf(r -> "Performance".equals(r.getCategory()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0004", owner, request.getSession(true)));
+                form.getFavouriteReports().removeIf(r -> "Customers".equals(r.getCategory()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0056", owner, request.getSession(true)));
+
+                // filter categories of report by permission
+                form.getReportsByCategory().entrySet().removeIf(r -> "Performance".equals(r.getKey()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0004", owner, request.getSession(true)));
+                form.getReportsByCategory().entrySet().removeIf(r -> "Customers".equals(r.getKey()) && !UserPermissionChecker.hasAccessToFeature("LMS-ADM-0056", owner, request.getSession(true)));
+            }
+            
+            if (methodName.equals("saveReportFilters")) {
+                String strHasFilters = request.getParameter("hasFilters");
+                if (!StringUtils.isBlank(strHasFilters)) {
+                    if (strHasFilters.equals("false")) {
+                        form.getReportFilterItems().clear();
+                    } else {
+                        List<ReportFilterItem> filterItems = form.getReportFilterItems();
+
+    //					for(int i=filterItems.size()-1; i>=0; i--){
+    //						ReportFilterItem item = filterItems.get(i);
+    //						if(item.isMarkedForDeletion())
+    //							filterItems.remove(i);
+    //					}
+                    }
+                }
+            }
+        }
 
 	protected void validate(HttpServletRequest request, Object command, BindException errors, String methodName) throws Exception {
 		ReportForm form = (ReportForm)command;
@@ -200,6 +237,19 @@ public class ReportController extends VU360BaseMultiActionController{
 		ReportForm form = (ReportForm)command;
 		
 		VU360Report report = form.getCurrentReport();
+                
+                if(form.getCurrentReport().getSqlTemplateUri().equalsIgnoreCase(SQLTEMPLATE_FOR_CUSTOMER_REPORT)) {
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    if (auth.getDetails() != null && auth.getDetails() instanceof VU360UserAuthenticationDetails) {
+                        VU360UserAuthenticationDetails details = (VU360UserAuthenticationDetails) auth.getDetails();
+                        if (details.getCurrentMode() == VU360UserMode.ROLE_LMSADMINISTRATOR) {
+                            if (details.getCurrentSearchType() != AdminSearchType.DISTRIBUTOR) {
+                                return new ModelAndView(failureTemplate, "isRedirect", "d");
+                            }
+                        }
+                    }
+                }
+                
 		if(report!=null){
 			com.softech.vu360.lms.vo.VU360User user = (com.softech.vu360.lms.vo.VU360User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			VU360ReportExecutionSummary executionSummary = reportingConfigurationService.lastExecutionSummary(report,user.getId());
@@ -230,6 +280,19 @@ public class ReportController extends VU360BaseMultiActionController{
 				}
 			}catch(NumberFormatException ne){}
 		}
+                
+                if(form.getCurrentReport().getSqlTemplateUri().equalsIgnoreCase(SQLTEMPLATE_FOR_CUSTOMER_REPORT)) {
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    if (auth.getDetails() != null && auth.getDetails() instanceof VU360UserAuthenticationDetails) {
+                        VU360UserAuthenticationDetails details = (VU360UserAuthenticationDetails) auth.getDetails();
+                        if (details.getCurrentMode() == VU360UserMode.ROLE_LMSADMINISTRATOR) {
+                            if (details.getCurrentSearchType() != AdminSearchType.DISTRIBUTOR) {
+                                return new ModelAndView(failureTemplate, "isRedirect", "d");
+                            }
+                        }
+                    }
+                }
+                
 		return this.browseReports(request, response, command, errors);
 	}
 	
@@ -332,22 +395,54 @@ public class ReportController extends VU360BaseMultiActionController{
 		return new ModelAndView(summaryTemplate); 
 	}
 	
-	//execute the selected report
 	public ModelAndView executeReport(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception {
 		
-		ReportForm form = (ReportForm)command;
-		VU360Report report = form.getCurrentReport();
-		if( report == null ) {
-			throw new Exception("current report not selected");
-		}
-		com.softech.vu360.lms.vo.VU360User owner = (com.softech.vu360.lms.vo.VU360User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		reportExecutionService.executeReport(report, owner);
-		
+            ReportForm form; 
+            VU360Report report;
+            List<VU360ReportFilter> customFitlers;
 
-		VU360ReportExecutionSummary executionSummary = reportingConfigurationService.lastExecutionSummary(report,owner.getId());
-		form.setCurrentReportLastExecutionSummary(executionSummary);
+            form = (ReportForm) command;
+            report = form.getCurrentReport();
+            report = reportingConfigurationService.getReportCopy(report.getId());
 
-		return new ModelAndView(summaryTemplate);
+            if (report == null) {
+                throw new Exception("current report not selected");
+            }
+
+            if (form.getCurrentReport() != null && form.getCurrentReport().getSqlTemplateUri().equalsIgnoreCase(SQLTEMPLATE_FOR_CUSTOMER_REPORT)) {
+
+                if(form.getCurrentReport().getSqlTemplateUri().equalsIgnoreCase(SQLTEMPLATE_FOR_CUSTOMER_REPORT)) {
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    if (auth.getDetails() != null && auth.getDetails() instanceof VU360UserAuthenticationDetails) {
+                        VU360UserAuthenticationDetails details = (VU360UserAuthenticationDetails) auth.getDetails();
+                        if (details.getCurrentMode() == VU360UserMode.ROLE_LMSADMINISTRATOR) {
+                            if (details.getCurrentSearchType() != AdminSearchType.DISTRIBUTOR) {
+                                return new ModelAndView(failureTemplate, "isRedirect", "d");
+                            }
+                        }
+                    }
+                }
+                
+                if (validateCustomerReport(form, request.getSession())) {
+                    return new ModelAndView(summaryTemplate);
+                }
+
+                if (form.getCurrentReport() != null) {
+                    customFitlers = setAndgetCustomerReportFilter(form, report);
+                    form.getCurrentReport().setFilters(null);
+                    form.getCurrentReport().setFilters(reportingConfigurationService.getVU360ReportFilter(form.getCurrentReport()));
+                    form.getCurrentReport().getFilters().addAll(customFitlers);
+                    report.getFilters().addAll(form.getCurrentReport().getFilters());
+                }
+            }
+
+            com.softech.vu360.lms.vo.VU360User owner = (com.softech.vu360.lms.vo.VU360User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            reportExecutionService.executeReport(report, owner);
+
+            VU360ReportExecutionSummary executionSummary = reportingConfigurationService.lastExecutionSummary(report, owner.getId());
+            form.setCurrentReportLastExecutionSummary(executionSummary);
+
+            return new ModelAndView(summaryTemplate);
 	}
 	
 	//execute all the favourite reports
@@ -445,6 +540,7 @@ public class ReportController extends VU360BaseMultiActionController{
 	public ModelAndView displayReportFields(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception{
 		ReportForm form = (ReportForm)command;
 		VU360Report curr_report = form.getCurrentReport();
+                curr_report = reportingConfigurationService.getReportCopy(curr_report.getId());
 		if(curr_report==null)
 			throw new Exception("current report not selected");
 		List<VU360ReportField> curr_reportFields = curr_report.getFields();
@@ -498,6 +594,7 @@ public class ReportController extends VU360BaseMultiActionController{
 	public ModelAndView displayReportFieldsOrder(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception{
 		ReportForm form = (ReportForm)command;
 		VU360Report curr_report = form.getCurrentReport();
+                curr_report = reportingConfigurationService.getReportCopy(curr_report.getId());
 		if(curr_report==null)
 			throw new Exception("current report not selected");
 
@@ -510,6 +607,7 @@ public class ReportController extends VU360BaseMultiActionController{
 	public ModelAndView saveReportFieldsOrder(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception{
 		ReportForm form = (ReportForm)command;
 		VU360Report curr_report = form.getCurrentReport();
+                curr_report = reportingConfigurationService.getReportCopy(curr_report.getId());
 		if(curr_report==null)
 			throw new Exception("current report not selected");
 		
@@ -552,6 +650,7 @@ public class ReportController extends VU360BaseMultiActionController{
 	public ModelAndView displayReportFieldsSortOrder(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception{
 		ReportForm form = (ReportForm)command;
 		VU360Report curr_report = form.getCurrentReport();
+                curr_report = reportingConfigurationService.getReportCopy(curr_report.getId());
 		if(curr_report==null)
 			throw new Exception("current report not selected");
 
@@ -615,6 +714,7 @@ public class ReportController extends VU360BaseMultiActionController{
 	public ModelAndView displayReportFilters(HttpServletRequest request, HttpServletResponse response, Object command, BindException errors) throws Exception{
 		ReportForm form = (ReportForm)command;
 		VU360Report curr_report = form.getCurrentReport();
+                curr_report = reportingConfigurationService.getReportCopy(curr_report.getId());
 		if(curr_report==null)
 			throw new Exception("current report not selected");
 		
@@ -791,6 +891,216 @@ public class ReportController extends VU360BaseMultiActionController{
 		}
 	}
 
+        private boolean validateCustomerReport(ReportForm form, HttpSession session) {
+
+            boolean isError = false;
+                      
+            if ((form.getStartDate() == null || form.getStartDate().equals(""))
+                    && (form.getEndDate() == null || form.getEndDate().equals(""))) {
+                session.setAttribute("errorOnPerformanceReport","lms.proctor.proctorReport.error.selectStartorEndDate.Message");
+                isError = true;
+            } 
+            else {
+
+                boolean isStartDateFormated = false, isEndDateFormated = false;
+
+                Date startDate = null, endDate = null;
+
+                if (!form.getStartDate().equals("")) {
+                    try {
+                        startDate = DATE_FORMATTER.parse(form.getStartDate().concat(TIMESTAMP_OF_ZERO_SECONDS));
+                        isStartDateFormated = true;
+                    } catch (ParseException e) {
+                        session.setAttribute("errorOnPerformanceReport", "lms.proctor.proctorReport.error.IncorrectStartorEndDate.Message");
+                        isError = true;
+                        isStartDateFormated = false;
+                    }
+                }
+
+                if (!form.getEndDate().equals("")) {
+                    try {
+                        endDate = DATE_FORMATTER.parse(form.getEndDate().concat(TIMESTAMP_OF_ALMOST_AN_HOUR));
+                        isEndDateFormated = true;
+                    } catch (ParseException e) {
+                        session.setAttribute("errorOnPerformanceReport",
+                                "lms.proctor.proctorReport.error.IncorrectStartorEndDate.Message");
+                        isError = true;
+                        isEndDateFormated = false;
+                    }
+                }
+
+                if(isStartDateFormated && isEndDateFormated) {
+                    if(startDate.after(endDate)) {
+                        session.setAttribute("errorOnPerformanceReport", "lms.proctor.proctorReport.error.IncorrectStartorEndDate.Message");
+                        isError = true;
+                        isStartDateFormated = false;
+                    }
+                    if(endDate.before(startDate)) {
+                        session.setAttribute("errorOnPerformanceReport",
+                                "lms.proctor.proctorReport.error.IncorrectStartorEndDate.Message");
+                        isError = true;
+                        isEndDateFormated = false;
+                    }
+                }
+
+                if(isStartDateFormated || isEndDateFormated)
+                    session.setAttribute("errorOnPerformanceReport", null);
+            }
+            return isError;
+        }    
+
+        private List<VU360ReportFilter> setAndgetCustomerReportFilter(ReportForm form, VU360Report report) throws ParseException {
+                       
+            VU360ReportField enrollmentStartDateField;
+            VU360ReportField distributorIdField;
+            
+            VU360ReportFilter enrollmentStartDateGreaterThanFilter;
+            VU360ReportFilter enrollmentStartDateLessThanFilter;
+            VU360ReportFilter distributorIdEqualsToFilter;
+            
+            VU360ReportFilterValue enrollmentStartDateStartRangeFilterValue;
+            VU360ReportFilterValue enrollmentStartDateEndDateRangeFilterValue;
+            VU360ReportFilterValue distributorIdEqualsToFilterValue;
+            
+            VU360ReportFilterOperand enrollmentStartDateGreaterThanAndEqualFilterOperand;
+            VU360ReportFilterOperand enrollmentStartDateLessThanAndEqualFilterOperand;
+            VU360ReportFilterOperand distributorIdEqualsToFilterOperand;
+            
+            Date startDate, endDate;
+            SimpleDateFormat dateFormat;
+            long distributorId;
+            
+            List<VU360ReportFilter> filters;
+            
+            enrollmentStartDateField = new VU360ReportField();
+            distributorIdField = new VU360ReportField();
+            
+            enrollmentStartDateLessThanFilter = new VU360ReportFilter();
+            enrollmentStartDateGreaterThanFilter = new VU360ReportFilter();
+            distributorIdEqualsToFilter = new VU360ReportFilter();
+            
+            enrollmentStartDateStartRangeFilterValue = new VU360ReportFilterValue();
+            enrollmentStartDateEndDateRangeFilterValue = new VU360ReportFilterValue();
+            distributorIdEqualsToFilterValue = new VU360ReportFilterValue();
+            
+            enrollmentStartDateLessThanAndEqualFilterOperand = new VU360ReportFilterOperand();
+            enrollmentStartDateGreaterThanAndEqualFilterOperand = new VU360ReportFilterOperand();
+            distributorIdEqualsToFilterOperand = new VU360ReportFilterOperand();
+            
+            filters = new ArrayList<>();
+            
+            enrollmentStartDateField.setDataType(VU360ReportField.DT_DATE);
+            enrollmentStartDateField.setColumnFormat(VU360ReportField.FORMAT_DATETIME);
+            enrollmentStartDateField.setDbColumnName("EnrollmentStartDate");
+            enrollmentStartDateField.setFilterable(true);
+            enrollmentStartDateField.setVu360report(report);
+
+            distributorIdField.setDataType(VU360ReportField.DT_INTEGER);
+            distributorIdField.setColumnFormat(VU360ReportField.FORMAT_INTEGER);
+            distributorIdField.setDbColumnName("DISTRIBUTOR_ID");
+            distributorIdField.setFilterable(true);
+            distributorIdField.setVu360report(report);
+            
+            dateFormat = new SimpleDateFormat(DB_DATE_FORMAT);
+
+            startDate = dateFormat.parse(getStartDate(form));
+            endDate = dateFormat.parse(getEndDate(form));
+            
+            distributorId = getDistributorId();
+            
+            enrollmentStartDateStartRangeFilterValue.setDateValue(startDate);
+            enrollmentStartDateEndDateRangeFilterValue.setDateValue(endDate);
+            distributorIdEqualsToFilterValue.setNumericValue(new BigInteger(String.valueOf(distributorId)));
+            
+            enrollmentStartDateGreaterThanAndEqualFilterOperand.setValue(VU360ReportFilterOperand.GREATER_THAN_OR_EQUAL_OP);
+            enrollmentStartDateLessThanAndEqualFilterOperand.setValue(VU360ReportFilterOperand.LESS_THAN_OR_EQUAL_OP);
+            distributorIdEqualsToFilterOperand.setValue(VU360ReportFilterOperand.EQUALS_OP);
+            
+            enrollmentStartDateGreaterThanFilter.setOperand(enrollmentStartDateGreaterThanAndEqualFilterOperand);
+            enrollmentStartDateGreaterThanFilter.setReportFilterType(VU360ReportFilter.DATE_TYPE);
+            enrollmentStartDateGreaterThanFilter.setField(enrollmentStartDateField);
+            enrollmentStartDateGreaterThanFilter.setValue(enrollmentStartDateStartRangeFilterValue);
+            enrollmentStartDateGreaterThanFilter.setId(Long.valueOf(1));
+            
+            enrollmentStartDateLessThanFilter.setOperand(enrollmentStartDateLessThanAndEqualFilterOperand);
+            enrollmentStartDateLessThanFilter.setReportFilterType(VU360ReportFilter.DATE_TYPE);
+            enrollmentStartDateLessThanFilter.setField(enrollmentStartDateField);
+            enrollmentStartDateLessThanFilter.setValue(enrollmentStartDateEndDateRangeFilterValue);
+            enrollmentStartDateLessThanFilter.setId(Long.valueOf(2));
+            
+            distributorIdEqualsToFilter.setOperand(distributorIdEqualsToFilterOperand);
+            distributorIdEqualsToFilter.setReportFilterType(VU360ReportFilter.NUMERIC_TYPE);
+            distributorIdEqualsToFilter.setField(distributorIdField);
+            distributorIdEqualsToFilter.setValue(distributorIdEqualsToFilterValue);
+            distributorIdEqualsToFilter.setId(Long.valueOf(2));
+
+            filters.add(enrollmentStartDateGreaterThanFilter);
+            filters.add(enrollmentStartDateLessThanFilter);
+            filters.add(distributorIdEqualsToFilter);
+
+            return filters;
+
+        }
+
+        /**
+         * Get a valid start date
+         *
+         * @param form
+         * @return
+         * @throws ParseException
+         */
+        private String getStartDate(ReportForm form) throws ParseException {
+
+            String result = DEFAULT_START_DATE;
+            String startDate = form.getStartDate();
+
+            if((startDate != null) && (startDate.trim().length() > 0)) {
+
+                result = ConvertToDBDateFormat(startDate.concat(TIMESTAMP_OF_ZERO_SECONDS));
+
+            }
+            return result;
+        }
+
+        /**
+         * Get a valid end date
+         *
+         * @param form
+         * @return
+         * @throws ParseException
+         */
+        private String getEndDate(ReportForm form) throws ParseException {
+
+            String result;
+            String endDate = form.getEndDate();
+
+            if((endDate == null) || (endDate.trim().length() == 0)) {
+                result = ConvertToDBDateFormat((new SimpleDateFormat(INPUT_DATE_FORMAT)).format(new Date()));
+            } else {
+                result = ConvertToDBDateFormat(endDate.concat(TIMESTAMP_OF_ALMOST_AN_HOUR));
+            }
+            return result;
+        }
+        
+        private long getDistributorId() {
+            
+            Customer selectedCustomer;
+            Distributor distributor;
+
+            selectedCustomer = ((VU360UserAuthenticationDetails) SecurityContextHolder.getContext().
+                    getAuthentication().getDetails()).getCurrentCustomer();
+            distributor = selectedCustomer.getDistributor();
+
+            return distributor.getId();
+        }
+
+        private String ConvertToDBDateFormat(String input) throws ParseException {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(INPUT_DATE_FORMAT);
+            Date date = dateFormat.parse(input.concat(TIMESTAMP_OF_ZERO_SECONDS));
+            dateFormat.applyPattern(DB_DATE_FORMAT);
+            return dateFormat.format(date);
+        }        
+        
 	public void setHtmlViewTemplate(String htmlViewTemplate) {
 		this.htmlViewTemplate = htmlViewTemplate;
 	}
@@ -809,5 +1119,13 @@ public class ReportController extends VU360BaseMultiActionController{
 			ReportExecutionService reportExecutionService) {
 		this.reportExecutionService = reportExecutionService;
 	}
+        
+        public String getFailureTemplate() {
+            return failureTemplate;
+        }
+
+        public void setFailureTemplate(String failureTemplate) {
+            this.failureTemplate = failureTemplate;
+        }
 
 }

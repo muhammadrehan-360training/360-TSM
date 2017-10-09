@@ -421,18 +421,23 @@ public class LearnerSelfRegistrationController extends VU360BaseMultiActionContr
 			vu360User.getLearner().getLearnerProfile().setCustomFieldValues(myCustomFieldValues);
 			vu360User.getLearner().setVu360User(vu360User);
 			learnerService.addLearner(null, regInv.getOrgGroups(), regInv.getLearnerGroups(), vu360User.getLearner());
-			
+			Map<Object, Object> error = new HashMap<>();
 			// [1/27/2011] LMS-7183 :: Retired Course Functionality II (to enroll learner in Learner Group from Self Registration Invitations
 			if (regInv.getLearnerGroups() != null && regInv.getLearnerGroups().size() > 0) {
 				for (LearnerGroup learnerGroup : regInv.getLearnerGroups()) {
-					this.enrollmentService.enrollLearnerToLearnerGroupItems(vu360User, learnerGroup);				
+					error.putAll(this.enrollmentService.enrollLearnerToLearnerGroupItems(vu360User, learnerGroup));
+                                        if(!error.isEmpty()) {
+                                            context.putAll(error);
+                                        }
 				}
 			}
-			learnerService.addRegistrationInvitation(regInv);
-			
-			context.put("learner", vu360User.getLearner());					
-			return new ModelAndView(learnerThankyouTemplate, "context", context);	
+                        
+                        //if(error.isEmpty()) {
+                            learnerService.addRegistrationInvitation(regInv);
 
+                            context.put("learner", vu360User.getLearner());					
+                            return new ModelAndView(learnerThankyouTemplate, "context", context);	
+                        //}
 			
 		}catch(Exception ex){
 			log.debug("Exception Occured while transofrming & updating learner profile: " + ex.getMessage());

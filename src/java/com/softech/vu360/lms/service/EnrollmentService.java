@@ -91,7 +91,7 @@ public interface EnrollmentService {
 	public Map<Object, Object> displayViewSchedule(VU360User user, Brander brand, String courseId, String learnerEnrollmentID);
 	
 	// [1/27/2011] LMS-7183 :: Retired Course Functionality II (to enroll learner in Learner Group from Self Registration Invitations
-	public void enrollLearnerToLearnerGroupItems (VU360User vu360User, LearnerGroup learnerGroup);
+	public Map<Object, Object> enrollLearnerToLearnerGroupItems (VU360User vu360User, LearnerGroup learnerGroup);
 	public AvailableCoursesTree getAvailableCoursesTree(Learner learner, String search);
 	//public List<Subscription> getSubscriptionLearnerAssignments(long userId);
 	

@@ -1,24 +1,24 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-#parse("snippets/reportAdminHead.vm")
-
-   
+        #parse("snippets/reportAdminHead.vm")
         <script type="text/javascript">
-            function submitLogoContainer(value){
-                document.frmLogoContainer.method.value=value;
-                document.frmLogoContainer.submit();
-            }
-        
-        	 $(document).ready(function() {
-        		 
-        	});
-        </script>
-   </head>
-        
-    <body>
-		#set($currentReport=$reportForm.getCurrentReport())
+            function submitLogoContainer(value) {
+                if($("form[name='frmLogoContainer'] input[name='startDate']").length)
+                    $("form[name='frmLogoContainer'] input[name='startDate']").val($("form[name='frmLogoContainer'] input[name='txtStartDate']").val());
+                if($("form[name='frmLogoContainer'] input[name='endDate']").length)
+                    $("form[name='frmLogoContainer'] input[name='endDate']").val($("form[name='frmLogoContainer'] input[name='txtEndDate']").val());
+                $("form[name='frmLogoContainer'] input[name='method']").val(value);
 
+                $("form[name='frmLogoContainer']").submit();
+            }
+        </script>
+        <link rel="stylesheet" type="text/css" href="brands/default/en/css/datepicker.css"/>
+        <script type="text/javascript" src="javascript/ui.datepicker.js"></script>
+    </head>
+    <body>
+        <form name="frmLogoContainer" action="adm_ManageReports.do" method="POST">
+        #set($currentReport=$reportForm.getCurrentReport())
         <table id="table-layout" border="0" cellpadding="0" cellspacing="0">
             <tr>
                 <td id="header" colspan="2">
@@ -59,7 +59,23 @@
             	 <td id="content">
             	 <!-- </LMS SEARCH> -->
             	 <div id="scrollable">
-            	    <form name="frmLogoContainer" action="adm_ManageReports.do" method="POST">
+                    #set($ssn=$!{request.getSession(true)})
+                    #set($sDirection = $ssn.getAttribute("errorOnPerformanceReport"))
+                    #if($sDirection)
+                    <!-- error-box -->
+                    <div id="message_box" style="float:left;">
+                        <img id="close_message" style="float:right;cursor:pointer"  src="$brander.getBrandElement("lms.errorMessage.pixel.12-em-cross.png")" />
+                        #if($sDirection)
+                            <div class="width40pct">
+                                <div class="message_box_align"><img src="$brander.getBrandElement("lms.errorMessage.pixel.addLearner_06.gif")" width="14" height="14" alt="" /></div>
+                                <div class="message_box_align">$brander.getBrandElement($sDirection)</div>
+                            </div>
+                        #end
+                        $ssn.setAttribute("errorOnPerformanceReport", null)
+                    </div>
+                    #end
+                    <!-- error-box -->
+            	    
                             <input type="hidden" name="method" value="" >
                             <!-- Logo+Manage-User -->
                             <div class="page_description" id="pageDescription">
@@ -83,7 +99,7 @@
                                    <div id="detailsHolder">$brander.getBrandElement("lms.reports.summaryReport.description")</div>
                                 </div>
             					 <!-- Logo+Manage-User ends-->
-                        </form>
+
 
 						<!-- User-profile -->
 						#if($null.isNull($currentReport))
@@ -96,7 +112,48 @@
 							<div id="e7a" class="$brander.getBrandElement("lms.reports.summaryReport.cssClass.Block-Contain-header")">
 								<div id="e8" class="$brander.getBrandElement("lms.reports.summaryReport.cssClass.Search-Containerheaderleft")">$currentReport.title</div>
 							</div>
-							
+                                                        #if($currentReport.getSqlTemplateUri().equals("vm/reportsql/admin_customersreport.vm"))
+                                                            <input type="hidden" id="startDate" name="startDate" value="" >
+                                                            <input type="hidden" id="endDate" name="endDate" value="" >
+                                                            <!-- Add mandatory Date Filter to Learner Performance by Course report -->
+                                                            <table border="0">
+                                                                <tr>
+                                                                    <td colspan="2" style="padding-left:15px">
+                                                                        <b>$brander.getBrandElement("lms.proctor.proctorCompletionCertificates.caption.dateRange") :</b>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="padding-left:15px">
+                                                                        $brander.getBrandElement("lms.enrollment.swapEnrollments.caption.startDate")
+                                                                    </td>
+                                                                    <td style="padding-left:15px">
+                                                                        <input type="text" class="input_field"  date:closeAtTop="false" date:buttonText="$brander.getBrandElement("lms.manager.addLearner.calender.tooltip")" onKeyPress="if(event.keyCode==13){doSearch();}" style="font-size:9px; float:left; margin-right:5px; width:170px;" name="txtStartDate" id="txtStartDate" />
+                                                                        <script type="text/javascript">
+                                                                            $("#txtStartDate").datepicker({
+                                                                                showOn: "both",
+                                                                                buttonImage: "$brander.getBrandElement("lms.pixel.iconCalenderGif")",
+                                                                                buttonImageOnly: true
+                                                                            });
+                                                                        </script>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="padding-left:15px">
+                                                                        $brander.getBrandElement("lms.enrollment.swapEnrollments.caption.endDate")
+                                                                    </td>
+                                                                    <td style="padding-left:15px">
+                                                                        <input type="text" class="input_field"  date:closeAtTop="false" date:buttonText="$brander.getBrandElement("lms.manager.addLearner.calender.tooltip")" onKeyPress="if(event.keyCode==13){doSearch();}" style="font-size:9px; float:left; margin-right:5px; width:170px;" name="txtEndDate" id="txtEndDate"/>
+                                                                        <script type="text/javascript">
+                                                                            $("#txtEndDate").datepicker({
+                                                                                showOn: "both",
+                                                                                buttonImage: "$brander.getBrandElement("lms.pixel.iconCalenderGif")",
+                                                                                buttonImageOnly: true
+                                                                            });
+                                                                        </script>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        #end
 							<!-- User-left-right-list -->
 							<div id="e7b" class="$brander.getBrandElement("lms.reports.summaryReport.cssClass.Search-inputfield-box4")">
 								<!-- s -->
@@ -180,6 +237,7 @@
 				</td>
 			</tr>
         </table>
+        </form>
     </body>
 
 </html>

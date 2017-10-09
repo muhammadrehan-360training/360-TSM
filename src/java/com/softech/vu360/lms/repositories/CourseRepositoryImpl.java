@@ -300,7 +300,7 @@ public class CourseRepositoryImpl implements CourseRepositoryCustom {
                     else
                         queryString.append(" OR ");
                     
-                    queryString.append("c.BUSINESSKEY LIKE '%");
+                    queryString.append("c.BUSSINESSKEY LIKE '%");
                     queryString.append(e.trim().replace("'", "''"));
                     queryString.append("%'");
                 });
