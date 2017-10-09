@@ -8,6 +8,11 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 public class RestClient {
 	
@@ -62,5 +67,19 @@ public class RestClient {
         }
         return postData.toString().getBytes("UTF-8");
 	}
-	
+
+    public static ClientHttpRequestFactory getClientHttpRequestFactory() {
+        int timeout = 5000;
+        RequestConfig config = RequestConfig.custom()
+          .setConnectTimeout(timeout)
+          .setConnectionRequestTimeout(timeout)
+          .setSocketTimeout(timeout)
+          .build();
+        CloseableHttpClient client = HttpClientBuilder
+          .create()
+          .setDefaultRequestConfig(config)
+          .build();
+        return new HttpComponentsClientHttpRequestFactory(client);
+    }
+        
 }
