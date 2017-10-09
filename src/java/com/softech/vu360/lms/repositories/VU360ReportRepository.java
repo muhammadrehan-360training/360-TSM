@@ -14,8 +14,7 @@ import org.springframework.data.repository.query.Param;
  */
 public interface VU360ReportRepository extends CrudRepository<VU360Report, Long>,VU360ReportRepositoryCustom {
 
-        @Override
-        @Query("SELECT r FROM  #{#entityName} r join fetch r.fields f join fetch r.filters WHERE r.id =:ID")
+        @Query("SELECT r FROM  #{#entityName} r left join fetch r.fields f left join fetch r.filters WHERE r.id =:ID")
         VU360Report findOne(@Param("ID") Long id);
 	//public List<VU360Report> findSystemReportsByMode(String mode);
 	List<VU360Report> findBySystemOwnedOrderByTitleAsc(Boolean systemOwned);
