@@ -62,6 +62,10 @@ public class VU360User implements UserDetails, Serializable{
 	private String roleName;
 	private Integer accountNonLockedInt;
 	private Language language;
+        
+        private boolean isUDPAllowed = Boolean.FALSE;
+
+        private String UDPToken;
 
 	public Long getId() {
 		return id;
@@ -589,5 +593,21 @@ public class VU360User implements UserDetails, Serializable{
 	public void setLanguage(Language language) {
 		this.language = language;
 	}
+        
+        public boolean isUDPAllowed() {
+            return isUDPAllowed;
+        }
+
+        public void setIsUDPAllowed(boolean isUDPAllowed) {
+            this.isUDPAllowed = isUDPAllowed;
+        }
+
+        public String getUDPToken() {
+            return UDPToken;
+        }
+
+        public void setUDPToken(String UDPToken) {
+            this.UDPToken = UDPToken;
+        }
 
 }
