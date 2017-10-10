@@ -164,7 +164,11 @@ public class CustomAuthenticationProvider extends AbstractUserDetailsAuthenticat
                     }
                     userDtl = vUser;
                     
-                    if(vUser.getLearner().getCustomer().getDistributor().getDistributorCode().equals(DISTRUBTOR_CODE_MEGASITE) && !vUser.isManagerMode()) {
+                    if(vUser.getLearner() != null &&
+                            vUser.getLearner().getCustomer() != null &&
+                            vUser.getLearner().getCustomer().getDistributor() != null &&
+                            vUser.getLearner().getCustomer().getDistributor().getDistributorCode() != null &&
+                            vUser.getLearner().getCustomer().getDistributor().getDistributorCode().equals(DISTRUBTOR_CODE_MEGASITE) && !vUser.isManagerMode()) {
                         
                         ClientHttpRequestFactory requestFactory;
                         RestTemplate restTemplate;
