@@ -64,8 +64,8 @@ public class VU360User implements UserDetails, Serializable{
 	private Language language;
         
         private boolean isUDPAllowed = Boolean.FALSE;
-
         private String UDPToken;
+        private String plainPassword;
 
 	public Long getId() {
 		return id;
@@ -610,4 +610,11 @@ public class VU360User implements UserDetails, Serializable{
             this.UDPToken = UDPToken;
         }
 
+        public String getPlainPassword() {
+            return plainPassword;
+        }
+
+        public void setPlainPassword(String plainPassword) {
+            this.plainPassword = plainPassword;
+        }
 }

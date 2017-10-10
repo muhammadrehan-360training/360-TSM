@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Redirecting ...</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+        <script type="text/javascript" src="javascript/jquery-1.2.6.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                // text spinning
+                i = 0;
+                text = "Please wait ";
+                setInterval(function() {
+                    $("#loading").html(text+Array((++i % 4)+1).join("."));
+                }, 500);
+
+                var settings = {
+                  "async": true,
+                  "crossDomain": true,
+                  "url": "${udp}",
+                  "method": "POST",
+                  "headers": {
+                    "content-type": "application/json",
+                    "cache-control": "no-cache"
+                  },
+                  "processData": false,
+                  "data": $("#udp").serialize()
+                }
+
+                $.ajax(settings).done(function (response) {
+                  console.log(response);
+                });
+
+            });
+ 	</script>
+    </head>
+    <body>
+        <a id="loading">Please wait</a>
+        <form id="udp" method="post" action="${udp}">
+            <input name="customkryptoval" type="hidden" value="${token}"/>
+            <input name="portal" type="hidden" value="0"/>
+        </form>
+    </body>
+</html>

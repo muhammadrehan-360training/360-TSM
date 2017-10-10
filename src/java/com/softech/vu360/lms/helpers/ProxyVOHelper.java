@@ -158,6 +158,8 @@ public class ProxyVOHelper {
 		distributorVO.setSelfReporting(distributorModel.isSelfReporting());
 		distributorVO.setType(distributorModel.getType());
 		distributorVO.setWebsiteUrl(distributorModel.getWebsiteUrl());
+                distributorVO.setUdp(distributorModel.isUdp());
+                
 		return distributorVO;
 	}
 

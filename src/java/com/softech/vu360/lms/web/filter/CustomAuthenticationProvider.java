@@ -14,20 +14,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import com.softech.vu360.lms.model.ActiveDirectoryUser;
 import com.softech.vu360.lms.service.ActiveDirectoryService;
 import com.softech.vu360.lms.service.LearnerService;
-import com.softech.vu360.lms.web.restful.request.UDPTokenRequest;
-import com.softech.vu360.lms.web.restful.response.UDPTokenResponse;
-import com.softech.vu360.util.RestClient;
 import com.softech.vu360.util.VU360Properties;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 public class CustomAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
     private static Logger log = Logger.getLogger(CustomAuthenticationProvider.class);
     private static String adEnabled = VU360Properties.getVU360Property("ad.integration.enabled");
     private static final String DISTRUBTOR_CODE_MEGASITE = VU360Properties.getVU360Property("lms.distributor.code.megasite");
-    private static final String UDP_TOKEN_SERVICE_URL = VU360Properties.getVU360Property("udp.token.service.url");
     
     private UserDetailsService userDetailsService;
     private ActiveDirectoryService activeDirectoryService = null;
@@ -168,20 +161,9 @@ public class CustomAuthenticationProvider extends AbstractUserDetailsAuthenticat
                             vUser.getLearner().getCustomer() != null &&
                             vUser.getLearner().getCustomer().getDistributor() != null &&
                             vUser.getLearner().getCustomer().getDistributor().getDistributorCode() != null &&
-                            vUser.getLearner().getCustomer().getDistributor().getDistributorCode().equals(DISTRUBTOR_CODE_MEGASITE) && !vUser.isManagerMode()) {
+                            vUser.getLearner().getCustomer().getDistributor().isUdp()) {
                         
-                        ClientHttpRequestFactory requestFactory;
-                        RestTemplate restTemplate;
-                        HttpEntity<UDPTokenRequest> request;
-                        UDPTokenResponse response;
-
-                        requestFactory = RestClient.getClientHttpRequestFactory();
-                        restTemplate = new RestTemplate(requestFactory);
-                        request = new HttpEntity<>(new UDPTokenRequest(username, password, vUser.getLearner().getCustomer().getDistributor().getDistributorCode()));
-                        response = restTemplate.postForObject(UDP_TOKEN_SERVICE_URL, request, UDPTokenResponse.class);
-                        
-                        vUser.setIsUDPAllowed(response.isUdpAllowedTF());
-                        vUser.setUDPToken(response.getAccess_token());
+                        vUser.setPlainPassword(password);
                         
                     }
 

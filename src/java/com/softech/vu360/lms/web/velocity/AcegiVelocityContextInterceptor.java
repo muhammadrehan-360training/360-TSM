@@ -112,8 +112,6 @@ public class AcegiVelocityContextInterceptor extends HandlerInterceptorAdapter {
 	private static final Logger log = Logger.getLogger(AcegiVelocityContextInterceptor.class.getName());
 	private static UserPermissionChecker userPermissionChecker = new UserPermissionChecker();
         
-        private static final String UDP_URL = VU360Properties.getVU360Property("udp.url");
-	
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
 		log.debug("Inside AcegiVelocityContextInterceptor.afterCompletion()");
@@ -166,15 +164,6 @@ public class AcegiVelocityContextInterceptor extends HandlerInterceptorAdapter {
 
 			}
 
-                        if (auth!=null && auth.getPrincipal() != null
-					&& auth.getPrincipal() instanceof com.softech.vu360.lms.vo.VU360User) {
-				com.softech.vu360.lms.vo.VU360User loggedInUser = (com.softech.vu360.lms.vo.VU360User) auth.getPrincipal();
-                                
-                                if(loggedInUser.isUDPAllowed()) {
-                                    response.sendRedirect(String.format(UDP_URL, loggedInUser.getUDPToken()));
-                                }
-                        }
-                        
 			// Jason Burns - 03/05/2009 - why is this here? This does not appear
 			// to be required for
 			// EVERY request in the system?

@@ -123,6 +123,16 @@ public class LoginInterceptorController implements Controller {
 					response.addCookie(cookiePredictUser);
 				}
 			}
+                        
+                        if(
+                                user.getLearner() != null && 
+                                user.getLearner().getCustomer() != null && 
+                                user.getLearner().getCustomer().getDistributor() != null && 
+                                user.getLearner().getCustomer().getDistributor().isUdp() &&
+                                !user.isManagerMode()
+                        ) {
+                            return new ModelAndView("redirect:udp.do");
+                        }
 			//details.setOriginalPrincipal((VU360User)vu360UserService.loadUserByUsername(user.getUsername()));
 			//details.doInitializeUser();
 			//user = (VU360User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

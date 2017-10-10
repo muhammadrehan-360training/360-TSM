@@ -22,369 +22,376 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 /**
- * 
+ *
  * @author marium.saud
  * @Modifier Raja Wajahat Ali
  *
  */
-
 @Entity
 @Table(name = "DISTRIBUTOR")
-@NamedStoredProcedureQuery(name = "Distributor.insertDistribiutorIDsInTmpTbl", procedureName = "INSERT_TEMP_DISTRIBUTOR_ID"
-, parameters = {
-		  @StoredProcedureParameter(mode = ParameterMode.IN, name = "IDS", type = String.class)
-		  }
+@NamedStoredProcedureQuery(name = "Distributor.insertDistribiutorIDsInTmpTbl", procedureName = "INSERT_TEMP_DISTRIBUTOR_ID",
+         parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "IDS", type = String.class)
+        }
 )
 public class Distributor extends Owner implements SearchableKey {
 
-	private static final long serialVersionUID = 2518171447836672166L;
+    private static final long serialVersionUID = 2518171447836672166L;
 
-	public static final String CODE_PREFIX="VURES";
-    public static final String DISTRIBUTOR= "DISTRIBUTOR";
+    public static final String CODE_PREFIX = "VURES";
+    public static final String DISTRIBUTOR = "DISTRIBUTOR";
 
-	
-	/*@Id
+    /*@Id
     @javax.persistence.TableGenerator(name = "DISTRIBUTOR_ID", table = "VU360_SEQ", pkColumnName = "TABLE_NAME", valueColumnName = "NEXT_ID", pkColumnValue = "DISTRIBUTOR", allocationSize = 1)
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DISTRIBUTOR_ID")
 	private Long id;*/
-	
-	 @Id
-	 @GeneratedValue(strategy = GenerationType.TABLE, generator = "seqDistributorId")
-	 @GenericGenerator(name = "seqDistributorId", strategy = "com.softech.vu360.lms.model.PrimaryKeyGenerator", parameters = {
-	 @Parameter(name = "table_name", value = "VU360_SEQ"),
-	 @Parameter(name = "value_column_name", value = "NEXT_ID"),
-	 @Parameter(name = "segment_column_name", value = "TABLE_NAME"),
-	 @Parameter(name = "segment_value", value = "DISTRIBUTOR") })
-	 private Long id;
-	 
-	
-	@Column(name="NAME")
-	private String name;
-	
-	@OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="BRAND_ID")
-	private Brand brand ;
-	
-	@OneToOne(mappedBy = "distributor" , fetch=FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	private DistributorPreferences distributorPreferences ;
-	
-	@OneToOne (fetch=FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinColumn(name="ADDRESS_ID")
-	private Address distributorAddress ;
-	
-	@OneToOne (fetch=FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinColumn(name="ADDRESS_ID_2")
-	private Address distributorAddress2 ;
-	
-	@Column(name="OFFICEPHONE")
-	private String officePhone;
-	
-	@Column(name="PHONEEXTN")
-	private String officePhoneExtn;
-	
-	@Column(name="MOBILEPHONE")
-	private String mobilePhone;
-	
-	@Column(name="WEBSITE")
-	private String websiteUrl;
-	
-	@Column(name="EMAIL")
-	private String distributorEmail;
-	
-	@Column(name="DISTRIBUTORCODE")
-	private String distributorCode;
-	
-	@Column(name="STATUS")
-	private Boolean active = Boolean.TRUE;
-	
-	@Column(name="FIRSTNAME")
-	private String firstName;
-	
-	@Column(name="LASTNAME")
-	private String lastName;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "seqDistributorId")
+    @GenericGenerator(name = "seqDistributorId", strategy = "com.softech.vu360.lms.model.PrimaryKeyGenerator", parameters = {
+        @Parameter(name = "table_name", value = "VU360_SEQ"),
+	@Parameter(name = "value_column_name", value = "NEXT_ID"),
+	@Parameter(name = "segment_column_name", value = "TABLE_NAME"),
+	@Parameter(name = "segment_value", value = "DISTRIBUTOR")})
+    private Long id;
 
-	@Column(name="BRANDNAME")
-	private String brandName;
-	
-	@Column(name="SELFREPORTING")
-	private Boolean selfReporting = Boolean.FALSE;
-	
-	@Column(name="MARKEDPRIVATE")
-	private Boolean markedPrivate;
-	
-	@ManyToMany
-    @JoinTable(name="DISTRIBUTOR_CUSTOMFIELD", joinColumns = @JoinColumn(name="DISTRIBUTOR_ID",referencedColumnName="ID"),inverseJoinColumns = @JoinColumn(name="CUSTOMFIELD_ID",referencedColumnName="ID"))
+    @Column(name = "NAME")
+    private String name;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BRAND_ID")
+    private Brand brand;
+
+    @OneToOne(mappedBy = "distributor", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private DistributorPreferences distributorPreferences;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "ADDRESS_ID")
+    private Address distributorAddress;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "ADDRESS_ID_2")
+    private Address distributorAddress2;
+
+    @Column(name = "OFFICEPHONE")
+    private String officePhone;
+
+    @Column(name = "PHONEEXTN")
+    private String officePhoneExtn;
+
+    @Column(name = "MOBILEPHONE")
+    private String mobilePhone;
+
+    @Column(name = "WEBSITE")
+    private String websiteUrl;
+
+    @Column(name = "EMAIL")
+    private String distributorEmail;
+
+    @Column(name = "DISTRIBUTORCODE")
+    private String distributorCode;
+
+    @Column(name = "STATUS")
+    private Boolean active = Boolean.TRUE;
+
+    @Column(name = "FIRSTNAME")
+    private String firstName;
+
+    @Column(name = "LASTNAME")
+    private String lastName;
+
+    @Column(name = "BRANDNAME")
+    private String brandName;
+
+    @Column(name = "SELFREPORTING")
+    private Boolean selfReporting = Boolean.FALSE;
+
+    @Column(name = "MARKEDPRIVATE")
+    private Boolean markedPrivate;
+
+    @ManyToMany
+    @JoinTable(name = "DISTRIBUTOR_CUSTOMFIELD", joinColumns = @JoinColumn(name = "DISTRIBUTOR_ID", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "CUSTOMFIELD_ID", referencedColumnName = "ID"))
     private List<CustomField> customFields;
-	
-	@Column(name="RESELLERTYPE")
-	private String type;
-	
-	@OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="MYCUSTOMER_ID")
-	private Customer myCustomer ;
-	
-	@OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="CONTENTOWNER_ID")
-    private ContentOwner contentOwner ;
-	
-	@Column(name="IS_CORPORATE_AUTHOR_VAR")
-	private Boolean isCorporateAuthorVar; 
 
-	@Column(name="CALLLOGGINGENABLEDTF")
-	private Boolean callLoggingEnabled = Boolean.FALSE;
-	
-	@Column(name="LmsAPI_Enabled_TF")
-	private Boolean lmsApiEnabledTF= Boolean.FALSE;
-	
-	
-	public Boolean getCallLoggingEnabled() {
-		if(callLoggingEnabled==null){
-			callLoggingEnabled=Boolean.FALSE;
-		}
-		return callLoggingEnabled;
-	}
-	
-	public void setCallLoggingEnabled(Boolean callLoggingEnabled) {
-		this.callLoggingEnabled = callLoggingEnabled;
-	}
-	
-	public Address getDistributorAddress() {
-			return distributorAddress;
-	}
+    @Column(name = "RESELLERTYPE")
+    private String type;
 
-	public void setDistributorAddress(Address distributorAddress) {
-		this.distributorAddress = distributorAddress;
-	}
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MYCUSTOMER_ID")
+    private Customer myCustomer;
 
-	public Address getDistributorAddress2() {
-		return distributorAddress2;
-	}
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CONTENTOWNER_ID")
+    private ContentOwner contentOwner;
 
-	public void setDistributorAddress2(Address distributorAddress2) {
-		this.distributorAddress2 = distributorAddress2;
-	}
+    @Column(name = "IS_CORPORATE_AUTHOR_VAR")
+    private Boolean isCorporateAuthorVar;
 
-	public String getOfficePhone() {
-		return officePhone;
-	}
+    @Column(name = "CALLLOGGINGENABLEDTF")
+    private Boolean callLoggingEnabled = Boolean.FALSE;
 
-	public void setOfficePhone(String officePhone) {
-		this.officePhone = officePhone;
-	}
+    @Column(name = "LmsAPI_Enabled_TF")
+    private Boolean lmsApiEnabledTF = Boolean.FALSE;
+    
+    @Column(name = "UDPTF")
+    private boolean udp = Boolean.FALSE;
 
-	public String getOfficePhoneExtn() {
-		return officePhoneExtn;
-	}
+    public Boolean getCallLoggingEnabled() {
+        if (callLoggingEnabled == null) {
+            callLoggingEnabled = Boolean.FALSE;
+        }
+        return callLoggingEnabled;
+    }
 
-	public void setOfficePhoneExtn(String officePhoneExtn) {
-		this.officePhoneExtn = officePhoneExtn;
-	}
+    public void setCallLoggingEnabled(Boolean callLoggingEnabled) {
+        this.callLoggingEnabled = callLoggingEnabled;
+    }
 
-	public String getMobilePhone() {
-		return mobilePhone;
-	}
+    public Address getDistributorAddress() {
+        return distributorAddress;
+    }
 
-	public void setMobilePhone(String mobilePhone) {
-		this.mobilePhone = mobilePhone;
-	}
+    public void setDistributorAddress(Address distributorAddress) {
+        this.distributorAddress = distributorAddress;
+    }
 
-	public String getWebsiteUrl() {
-		return websiteUrl;
-	}
+    public Address getDistributorAddress2() {
+        return distributorAddress2;
+    }
 
-	public void setWebsiteUrl(String websiteUrl) {
-		this.websiteUrl = websiteUrl;
-	}
+    public void setDistributorAddress2(Address distributorAddress2) {
+        this.distributorAddress2 = distributorAddress2;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public String getOfficePhone() {
+        return officePhone;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setOfficePhone(String officePhone) {
+        this.officePhone = officePhone;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getOfficePhoneExtn() {
+        return officePhoneExtn;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setOfficePhoneExtn(String officePhoneExtn) {
+        this.officePhoneExtn = officePhoneExtn;
+    }
 
-	public Brand getBrand() {
-		return brand;
-	}
+    public String getMobilePhone() {
+        return mobilePhone;
+    }
 
-	public void setBrand(Brand brand) {
-		this.brand = brand;
-	}
+    public void setMobilePhone(String mobilePhone) {
+        this.mobilePhone = mobilePhone;
+    }
 
-	public String getKey() {
-		return id.toString();
-	}
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
 
-	public DistributorPreferences getDistributorPreferences() {
-		return distributorPreferences;
-	}
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
 
-	public void setDistributorPreferences(
-			DistributorPreferences distributorPreferences) {
-		this.distributorPreferences = distributorPreferences;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getDistributorEmail() {
-		return distributorEmail;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setDistributorEmail(String distributorEmail) {
-		this.distributorEmail = distributorEmail;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public  Boolean getActive() {
-		return active;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
+    public Brand getBrand() {
+        return brand;
+    }
 
-	public String getFirstName() {
-		return firstName;
-	}
+    public void setBrand(Brand brand) {
+        this.brand = brand;
+    }
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+    public String getKey() {
+        return id.toString();
+    }
 
-	public String getLastName() {
-		return lastName;
-	}
+    public DistributorPreferences getDistributorPreferences() {
+        return distributorPreferences;
+    }
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+    public void setDistributorPreferences(
+            DistributorPreferences distributorPreferences) {
+        this.distributorPreferences = distributorPreferences;
+    }
 
-	public String getOwnerType() {
-		return DISTRIBUTOR;
-	}
+    public String getDistributorEmail() {
+        return distributorEmail;
+    }
 
-	public String getDistributorCode() {
-		return distributorCode;
-	}
-	
-	public String getDistributorCodeUI()
-	{
-		return CODE_PREFIX+"-"+this.getId();
-	}
-	
-	public void setDistributorCode(String distributorCode) {
-		this.distributorCode = distributorCode;
-	}
+    public void setDistributorEmail(String distributorEmail) {
+        this.distributorEmail = distributorEmail;
+    }
 
-	public String getBrandName() {
-		return brandName;
-	}
+    public Boolean getActive() {
+        return active;
+    }
 
-	public void setBrandName(String brandName) {
-		this.brandName = brandName;
-	}
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
-	public  Boolean isSelfReporting() {
-		return selfReporting;
-	}
+    public String getFirstName() {
+        return firstName;
+    }
 
-	public void setSelfReporting(Boolean selfReporting) {
-		this.selfReporting = selfReporting;
-	}
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-	public  Boolean isMarkedPrivate() {
-		return markedPrivate;
-	}
+    public String getLastName() {
+        return lastName;
+    }
 
-	public void setMarkedPrivate(Boolean markedPrivate) {
-		this.markedPrivate = markedPrivate;
-	}
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-	public List<CustomField> getCustomFields() {
-		return customFields;
-	}
+    public String getOwnerType() {
+        return DISTRIBUTOR;
+    }
 
-	public void setCustomFields(List<CustomField> customFields) {
-		this.customFields = customFields;
-	}
+    public String getDistributorCode() {
+        return distributorCode;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getDistributorCodeUI() {
+        return CODE_PREFIX + "-" + this.getId();
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setDistributorCode(String distributorCode) {
+        this.distributorCode = distributorCode;
+    }
 
-	public Customer getMyCustomer() {
-		return myCustomer;
-	}
+    public String getBrandName() {
+        return brandName;
+    }
 
-	public void setMyCustomer(Customer customer) {
-		this.myCustomer = customer;
-	}
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
 
-	public ContentOwner getContentOwner() {
-		return contentOwner;
-	}
+    public Boolean isSelfReporting() {
+        return selfReporting;
+    }
 
-	public void setContentOwner(ContentOwner contentOwner) {
-		this.contentOwner = contentOwner;
-	}
-	
-	public  Boolean isSelfAuthor(){
-		if(getContentOwner()!=null)
-			return Boolean.TRUE;
-		else
-			return Boolean.FALSE;
-	}
-	public String getMyCustomerName(){
-		if(getMyCustomer()!=null){
-			return getMyCustomer().getName();
-		}else
-		{
-			return "";
-		}
-	}
-	
-	public  Boolean getLmsApiEnabledTF() {
-		if(lmsApiEnabledTF==null){
-			lmsApiEnabledTF=Boolean.FALSE;
-		}
-		return lmsApiEnabledTF;
-	}
+    public void setSelfReporting(Boolean selfReporting) {
+        this.selfReporting = selfReporting;
+    }
 
-	public void setLmsApiEnabledTF(Boolean lmsApiEnabledTF) {
-		if(lmsApiEnabledTF==null){
-			this.lmsApiEnabledTF=Boolean.FALSE;
-		}else{
-			this.lmsApiEnabledTF = lmsApiEnabledTF;
-		}
-	}
+    public Boolean isMarkedPrivate() {
+        return markedPrivate;
+    }
 
-	public Boolean isCorporateAuthorVar() {
-		if(this.isCorporateAuthorVar != null)
-			return this.isCorporateAuthorVar;
-		else
-			return Boolean.FALSE;
-	}
+    public void setMarkedPrivate(Boolean markedPrivate) {
+        this.markedPrivate = markedPrivate;
+    }
 
-	public void setCorporateAuthorVar(Boolean isCorporateAuthorVar) {
-		if(isCorporateAuthorVar != null)
-			this.isCorporateAuthorVar = isCorporateAuthorVar;
-		else
-			this.isCorporateAuthorVar = Boolean.FALSE;
-	}
+    public List<CustomField> getCustomFields() {
+        return customFields;
+    }
 
-	public void initializeOwnerParams(){//This method will be used to set values for Owner while saving survey
-		super.setId(this.id);
-		super.setOwnerType(getOwnerType());
-	}
+    public void setCustomFields(List<CustomField> customFields) {
+        this.customFields = customFields;
+    }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Customer getMyCustomer() {
+        return myCustomer;
+    }
+
+    public void setMyCustomer(Customer customer) {
+        this.myCustomer = customer;
+    }
+
+    public ContentOwner getContentOwner() {
+        return contentOwner;
+    }
+
+    public void setContentOwner(ContentOwner contentOwner) {
+        this.contentOwner = contentOwner;
+    }
+
+    public Boolean isSelfAuthor() {
+        if (getContentOwner() != null) {
+            return Boolean.TRUE;
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public String getMyCustomerName() {
+        if (getMyCustomer() != null) {
+            return getMyCustomer().getName();
+        } else {
+            return "";
+        }
+    }
+
+    public Boolean getLmsApiEnabledTF() {
+        if (lmsApiEnabledTF == null) {
+            lmsApiEnabledTF = Boolean.FALSE;
+        }
+        return lmsApiEnabledTF;
+    }
+
+    public void setLmsApiEnabledTF(Boolean lmsApiEnabledTF) {
+        if (lmsApiEnabledTF == null) {
+            this.lmsApiEnabledTF = Boolean.FALSE;
+        } else {
+            this.lmsApiEnabledTF = lmsApiEnabledTF;
+        }
+    }
+
+    public Boolean isCorporateAuthorVar() {
+        if (this.isCorporateAuthorVar != null) {
+            return this.isCorporateAuthorVar;
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public void setCorporateAuthorVar(Boolean isCorporateAuthorVar) {
+        if (isCorporateAuthorVar != null) {
+            this.isCorporateAuthorVar = isCorporateAuthorVar;
+        } else {
+            this.isCorporateAuthorVar = Boolean.FALSE;
+        }
+    }
+
+    public void initializeOwnerParams() {//This method will be used to set values for Owner while saving survey
+        super.setId(this.id);
+        super.setOwnerType(getOwnerType());
+    }
+
+    public boolean isUdp() {
+        return udp;
+    }
+
+    public void setUdp(boolean udp) {
+        this.udp = udp;
+    }
 }

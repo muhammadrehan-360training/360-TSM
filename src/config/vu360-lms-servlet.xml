@@ -5236,6 +5236,8 @@
               /legacy/generateCertificate.do=legacyCertificateGenerator
               /acmRegulatoryReportingInfo.do=acmRegulatoryReportingInfo
                /regulatoryReportingAdminController.do=regulatoryReportingAdminController
+               
+               /udp.do=udpController
             </value>
         </property>
     </bean>
@@ -5271,6 +5273,9 @@
     </bean> -->
 
 	<bean id="lrnLS360Dashboard" class="com.softech.vu360.lms.web.controller.learner.LS360Dashboard"/>
+        <bean id="udpController" class="com.softech.vu360.lms.web.controller.learner.UDPController">
+            <property name="udpTemplate" value="udp"/>
+        </bean>
 
 	<bean id="springContextListener" class="com.softech.vu360.lms.web.listener.SpringContextListener"/>
 
