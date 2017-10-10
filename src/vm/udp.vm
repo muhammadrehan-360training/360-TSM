@@ -12,24 +12,8 @@
                 setInterval(function() {
                     $("#loading").html(text+Array((++i % 4)+1).join("."));
                 }, 500);
-
-                var settings = {
-                  "async": true,
-                  "crossDomain": true,
-                  "url": "${udp}",
-                  "method": "POST",
-                  "headers": {
-                    "content-type": "application/json",
-                    "cache-control": "no-cache"
-                  },
-                  "processData": false,
-                  "data": $("#udp").serialize()
-                }
-
-                $.ajax(settings).done(function (response) {
-                  console.log(response);
-                });
-
+                // Submit form
+                $("#udp").submit();
             });
  	</script>
     </head>
