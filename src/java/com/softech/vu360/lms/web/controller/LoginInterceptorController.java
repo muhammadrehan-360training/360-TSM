@@ -32,6 +32,7 @@ import com.softech.vu360.lms.service.SecurityAndRolesService;
 import com.softech.vu360.lms.service.SurveyService;
 import com.softech.vu360.lms.service.VU360UserService;
 import com.softech.vu360.lms.util.UserPermissionChecker;
+import com.softech.vu360.lms.vo.Customer;
 import com.softech.vu360.lms.web.controller.model.InterceptorAlertForm;
 import com.softech.vu360.lms.web.filter.VU360UserAuthenticationDetails;
 import com.softech.vu360.lms.web.filter.VU360UserMode;
@@ -125,11 +126,15 @@ public class LoginInterceptorController implements Controller {
 			}
                         
                         if(
-                                user.getLearner() != null && 
-                                user.getLearner().getCustomer() != null && 
-                                user.getLearner().getCustomer().getDistributor() != null && 
-                                user.getLearner().getCustomer().getDistributor().isUdp() &&
-                                !user.isManagerMode()
+                                user.getLearner() != null
+                                && (
+                                    user.getLearner().getCustomer() != null 
+                                    && user.getLearner().getCustomer().getCustomerType() != null 
+                                    && user.getLearner().getCustomer().getCustomerType().equalsIgnoreCase(Customer.B2C)
+                                ) 
+                                && user.getLearner().getCustomer().getDistributor() != null
+                                && user.getLearner().getCustomer().getDistributor().isUdp()
+                                &&!user.isManagerMode()
                         ) {
                             return new ModelAndView("redirect:udp.do");
                         }

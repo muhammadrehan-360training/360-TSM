@@ -5273,6 +5273,7 @@
     </bean> -->
 
 	<bean id="lrnLS360Dashboard" class="com.softech.vu360.lms.web.controller.learner.LS360Dashboard"/>
+        
         <bean id="udpController" class="com.softech.vu360.lms.web.controller.learner.UDPController">
             <property name="udpTemplate" value="udp"/>
         </bean>

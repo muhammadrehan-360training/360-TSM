@@ -12,16 +12,14 @@
                 setInterval(function() {
                     $("#loading").html(text+Array((++i % 4)+1).join("."));
                 }, 500);
-                // Submit form
-                $("#udp").submit();
+                //$("#udp").submit();
+                $(location).attr('href', "${udp}");
             });
  	</script>
     </head>
     <body>
         <a id="loading">Please wait</a>
-        <form id="udp" method="post" action="${udp}">
-            <input name="customkryptoval" type="hidden" value="${token}"/>
-            <input name="portal" type="hidden" value="0"/>
+        <form id="udp" method="get" action="${udp}">
         </form>
     </body>
 </html>
