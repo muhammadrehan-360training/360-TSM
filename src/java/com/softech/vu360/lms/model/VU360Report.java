@@ -259,7 +259,7 @@ public class VU360Report implements SearchableKey {
      * @param fields the fields to set
      */
     public void setFields(List<VU360ReportField> fields) {
-        this.fields = new HashSet<>(fields);
+        this.fields = fields == null ? null : new HashSet<>(fields);
     }
 
     /**
@@ -273,7 +273,7 @@ public class VU360Report implements SearchableKey {
      * @param filters the filters to set
      */
     public void setFilters(List<VU360ReportFilter> filters) {
-        this.filters = new HashSet<>(filters);
+        this.filters = filters == null ? null : new HashSet<>(filters);
     }
 
     /**
