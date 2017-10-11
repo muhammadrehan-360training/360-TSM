@@ -19,7 +19,7 @@ import com.softech.vu360.util.VU360Properties;
 public class CustomAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
     private static Logger log = Logger.getLogger(CustomAuthenticationProvider.class);
-    private static final String adEnabled = VU360Properties.getVU360Property("ad.integration.enabled");
+    private static String adEnabled = VU360Properties.getVU360Property("ad.integration.enabled");
     private static final String DISTRUBTOR_CODE_MEGASITE = VU360Properties.getVU360Property("lms.distributor.code.megasite");
     
     private UserDetailsService userDetailsService;

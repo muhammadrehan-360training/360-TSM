@@ -73,7 +73,7 @@ public class UDPController implements Controller {
             }
             return new ModelAndView("redirect:/interceptor.do");
         }
-
+        
         requestFactory = RestClient.getClientHttpRequestFactory();
         restTemplate = new RestTemplate(requestFactory);
         request = new HttpEntity<>(new UDPTokenRequest(user.getUsername(), user.getPlainPassword(), distributorCode));

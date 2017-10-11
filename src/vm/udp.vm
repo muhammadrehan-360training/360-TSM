@@ -1,3 +1,4 @@
+#set($ssn = $!{request.getSession(true)})
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
@@ -13,13 +14,28 @@
                     $("#loading").html(text+Array((++i % 4)+1).join("."));
                 }, 500);
                 //$("#udp").submit();
-                $(location).attr('href', "${udp}");
+                if($("#isAdminSwitch").val()) {
+                    var win = window.open("${udp}", '_blank');
+                    if (win) {
+                        //Browser has allowed it to be opened
+                        win.focus();
+                        $(location).attr('href', "/lms/switchexituser.do");
+
+                    } else {
+                        //Browser has blocked it
+                        alert('Please allow popups for this website');
+                        $(location).attr('href', "/lms/switchexituser.do");
+                    }
+                } else {
+                    $(location).attr('href', "${udp}");
+                }
             });
- 	</script>
+    </script>
     </head>
     <body>
         <a id="loading">Please wait</a>
         <form id="udp" method="get" action="${udp}">
+            <input id="isAdminSwitch" type="hidden" value='$ssn.getAttribute("isAdminSwitch")'/>
         </form>
     </body>
 </html>

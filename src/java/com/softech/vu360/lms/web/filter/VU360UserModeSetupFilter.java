@@ -49,6 +49,7 @@ import com.softech.vu360.lms.service.SecurityAndRolesService;
 import com.softech.vu360.lms.service.VU360UserService;
 import com.softech.vu360.lms.web.controller.model.Menu;
 import com.softech.vu360.util.RedirectUtils;
+import org.springframework.web.servlet.ModelAndView;
 /**
  * @author Somnath
  *
@@ -447,7 +448,19 @@ ApplicationEventPublisherAware, MessageSourceAware {
 			
 							// LMS-3241 code added to remove the course catalog cache from session
 							request.getSession().removeAttribute("_courseCatalog");
-
+                                                        
+                                                        com.softech.vu360.lms.vo.VU360User user = (com.softech.vu360.lms.vo.VU360User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                                                        if (user.getLearner() != null
+                                                                && (user.getLearner().getCustomer() != null
+                                                                && user.getLearner().getCustomer().getCustomerType() != null
+                                                                && user.getLearner().getCustomer().getCustomerType().equalsIgnoreCase(com.softech.vu360.lms.vo.Customer.B2C))
+                                                                && user.getLearner().getCustomer().getDistributor() != null
+                                                                && user.getLearner().getCustomer().getDistributor().isUdp()
+                                                                && !user.isManagerMode()) {
+                                                            user.setPlainPassword("");
+                                                            this.managerSwitchTargetURL = "/udp.do";
+                                                        }
+                                                        
 							//redirect to target url
 							sendRedirect(request, response, this.managerSwitchTargetURL);
 						} catch (Exception e) {
