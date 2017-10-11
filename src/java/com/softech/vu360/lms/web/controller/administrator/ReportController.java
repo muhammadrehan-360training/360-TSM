@@ -400,11 +400,13 @@ public class ReportController extends VU360BaseMultiActionController{
             ReportForm form; 
             VU360Report report;
             List<VU360ReportFilter> customFitlers;
-
+            com.softech.vu360.lms.vo.Distributor distributor;
+            
             form = (ReportForm) command;
             report = form.getCurrentReport();
             report = reportingConfigurationService.getReportCopy(report.getId());
-
+            distributor = (com.softech.vu360.lms.vo.Distributor) request.getSession(true).getAttribute("adminSelectedDistributor");
+            
             if (report == null) {
                 throw new Exception("current report not selected");
             }
@@ -428,7 +430,7 @@ public class ReportController extends VU360BaseMultiActionController{
                 }
 
                 if (form.getCurrentReport() != null) {
-                    customFitlers = setAndgetCustomerReportFilter(form, report);
+                    customFitlers = setAndgetCustomerReportFilter(form, report, distributor.getId());
                     form.getCurrentReport().setFilters(null);
                     form.getCurrentReport().setFilters(reportingConfigurationService.getVU360ReportFilter(form.getCurrentReport()));
                     form.getCurrentReport().getFilters().addAll(customFitlers);
@@ -949,7 +951,7 @@ public class ReportController extends VU360BaseMultiActionController{
             return isError;
         }    
 
-        private List<VU360ReportFilter> setAndgetCustomerReportFilter(ReportForm form, VU360Report report) throws ParseException {
+        private List<VU360ReportFilter> setAndgetCustomerReportFilter(ReportForm form, VU360Report report, long selectedDistributorId) throws ParseException {
                        
             VU360ReportField enrollmentStartDateField;
             VU360ReportField distributorIdField;
@@ -1006,7 +1008,7 @@ public class ReportController extends VU360BaseMultiActionController{
             startDate = dateFormat.parse(getStartDate(form));
             endDate = dateFormat.parse(getEndDate(form));
             
-            distributorId = getDistributorId();
+            distributorId = selectedDistributorId;
             
             enrollmentStartDateStartRangeFilterValue.setDateValue(startDate);
             enrollmentStartDateEndDateRangeFilterValue.setDateValue(endDate);
@@ -1082,18 +1084,6 @@ public class ReportController extends VU360BaseMultiActionController{
             return result;
         }
         
-        private long getDistributorId() {
-            
-            Customer selectedCustomer;
-            Distributor distributor;
-
-            selectedCustomer = ((VU360UserAuthenticationDetails) SecurityContextHolder.getContext().
-                    getAuthentication().getDetails()).getCurrentCustomer();
-            distributor = selectedCustomer.getDistributor();
-
-            return distributor.getId();
-        }
-
         private String ConvertToDBDateFormat(String input) throws ParseException {
             SimpleDateFormat dateFormat = new SimpleDateFormat(INPUT_DATE_FORMAT);
             Date date = dateFormat.parse(input.concat(TIMESTAMP_OF_ZERO_SECONDS));
