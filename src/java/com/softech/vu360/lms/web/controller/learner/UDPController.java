@@ -39,8 +39,6 @@ public class UDPController implements Controller {
         HttpEntity<UDPTokenRequest> request;
         UDPTokenResponse response;
 
-        Map<String, Object> context;
-
         user = null;
         distributorCode = "";
 
@@ -84,11 +82,7 @@ public class UDPController implements Controller {
         
         user.setPlainPassword("");
 
-        context = new HashMap<>();
-        context.put("udp", String.format(UDP_URL, user.getUDPToken()));
-        context.put("token", user.getUDPToken());
-
-        return new ModelAndView(udpTemplate, context);
+        return new ModelAndView("redirect:" + String.format(UDP_URL, user.getUDPToken()));
 
     }
 
