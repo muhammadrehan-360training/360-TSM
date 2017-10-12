@@ -793,11 +793,17 @@ public class LearnerProfileController extends VU360BaseMultiActionController {
 			    			learnerValidationAnswers.setQuestionId(uQAVO.getQuestionId());
 			    			if(uQAVO.getQuestionType().equals("True False")){
 			    				String chkAnwser = request.getParameter("answerTF_"+ uQAVO.getQuestionId());
+								if(chkAnwser == null){
+									chkAnwser = uQAVO.getAnswer();
+								}
 				    			learnerValidationAnswers.setAnswer(chkAnwser);
 				    			learnerService.updateLearnerValidationAnswers(learnerValidationAnswers);
 			    			}
 			    			else if(uQAVO.getQuestionType().equals("Text Entry")){
 			    				String txtAnwser = request.getParameter("answerTxt_"+ uQAVO.getQuestionId());
+			    				if(txtAnwser == null){
+			    					txtAnwser = uQAVO.getAnswer();
+								}
 				    			learnerValidationAnswers.setAnswer(txtAnwser);
 				    			learnerService.updateLearnerValidationAnswers(learnerValidationAnswers);
 			    			}
