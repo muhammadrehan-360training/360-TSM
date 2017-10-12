@@ -1,14 +1,15 @@
 package com.softech.vu360.lms.rest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.softech.vu360.lms.model.*;
+import com.softech.vu360.lms.vo.UniqueQuestionAnswerVO;
+import com.softech.vu360.lms.vo.UniqueQuestionsVO;
 import org.apache.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,21 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.softech.JWTValidation.JwtValidation;
 import com.softech.JWTValidation.model.JwtPayload;
-import com.softech.vu360.lms.model.Address;
-import com.softech.vu360.lms.model.CreditReportingField;
-import com.softech.vu360.lms.model.CreditReportingFieldValue;
-import com.softech.vu360.lms.model.CreditReportingFieldValueChoice;
-import com.softech.vu360.lms.model.CustomField;
-import com.softech.vu360.lms.model.CustomFieldValue;
-import com.softech.vu360.lms.model.CustomFieldValueChoice;
-import com.softech.vu360.lms.model.Customer;
-import com.softech.vu360.lms.model.Distributor;
-import com.softech.vu360.lms.model.MultiSelectCreditReportingField;
-import com.softech.vu360.lms.model.MultiSelectCustomField;
-import com.softech.vu360.lms.model.SingleSelectCreditReportingField;
-import com.softech.vu360.lms.model.SingleSelectCustomField;
-import com.softech.vu360.lms.model.StaticCreditReportingField;
-import com.softech.vu360.lms.model.VU360User;
 import com.softech.vu360.lms.repositories.VU360UserRepository;
 import com.softech.vu360.lms.rest.model.FieldOption;
 import com.softech.vu360.lms.rest.model.LearnerCreditReportingField;
@@ -123,6 +109,7 @@ public class LearnerProfileService {
             List<ValidationQuestionSet> udpValidationQuestionList =  udpForm.getValidationQuestions();
             logger.debug("\nPreparing questions... ");
             learnerProfileForm.setLearnerValidationQuestions(getLearnerValidationQASetDTO(udpValidationQuestionList, lmsVu360User.getLearner().getId()));
+            learnerProfileForm.setMpValidationQuestion(getUniqueValidationQuestionList(udpForm.getUniqueValidationQuestions()));
 
             logger.debug("\nPreparing Custom Fields ... ");
             learnerProfileForm.setCustomFields(mapCustomFieldsFromUDPToLearner(lmsVu360User, udpForm));
@@ -340,8 +327,9 @@ public class LearnerProfileService {
     }
 
     private LearnerValidationQASetDTO getLearnerValidationQASetDTO(List<ValidationQuestionSet> udpValidationQuestionList, Long learnerId){
-        LearnerValidationQASetDTO learnerValidationQASetDTO = new LearnerValidationQASetDTO();
+        LearnerValidationQASetDTO learnerValidationQASetDTO = null;
         if(udpValidationQuestionList != null && !udpValidationQuestionList.isEmpty()) {
+            learnerValidationQASetDTO = new LearnerValidationQASetDTO();
             learnerValidationQASetDTO.setLearnerId(learnerId);
 
             learnerValidationQASetDTO.setQuestionInSet1(getSelectedQuestionId(udpValidationQuestionList.get(0)));
@@ -361,6 +349,40 @@ public class LearnerProfileService {
         }
 
         return learnerValidationQASetDTO;
+    }
+
+    private Map getUniqueValidationQuestionList(Map<String , Object> udpValidationQuestions){
+        Map<String, Object> lmsValidationQuestions = new LinkedHashMap<>();
+
+            Iterator<Map.Entry<String, Object>> iterator = udpValidationQuestions.entrySet().iterator();
+            String key = null;
+
+            while (iterator.hasNext()){
+                key = iterator.next().getKey();
+                if(key.contains("courseName_")){
+                    lmsValidationQuestions.put(key, udpValidationQuestions.get(key));
+                }else if(key.contains("questionanswerLst_")){
+                    List<LinkedHashMap> questionsList = (List)udpValidationQuestions.get(key);
+                    List<UniqueQuestionAnswerVO> lmsQuestionsList = new ArrayList<>();
+                    questionsList.stream().forEach(new Consumer<LinkedHashMap>() {
+                        @Override
+                        public void accept(LinkedHashMap questionMap) {
+
+                            UniqueQuestionAnswerVO uniqueQuestionAnswerVO = new UniqueQuestionAnswerVO();
+                            uniqueQuestionAnswerVO.setId(String.valueOf(questionMap.get("id")));
+                            uniqueQuestionAnswerVO.setQuestionId(Integer.parseInt(String.valueOf(questionMap.get("questionId"))));
+                            uniqueQuestionAnswerVO.setQuestion(String.valueOf(questionMap.get("question")));
+                            uniqueQuestionAnswerVO.setQuestionType(String.valueOf(questionMap.get("questionType")));
+                            uniqueQuestionAnswerVO.setAnswer(String.valueOf(questionMap.get("answer")));
+                            uniqueQuestionAnswerVO.setAnswerId(Integer.valueOf(String.valueOf(questionMap.get("answerId"))));
+                            lmsQuestionsList.add(uniqueQuestionAnswerVO);
+                        }
+                    });
+                    lmsValidationQuestions.put(key, lmsQuestionsList);
+                }
+            }
+
+        return lmsValidationQuestions;
     }
 
     private Long getSelectedQuestionId(ValidationQuestionSet validationQuestionSet){
@@ -479,5 +501,28 @@ public class LearnerProfileService {
             }
         }
         return creditReportingFieldsFromDB;
+    }
+
+    @RequestMapping(value = "/uniqueValidationQuestion", method = RequestMethod.GET)
+    public @ResponseBody LinkedHashMap<String, Object> getUniqueValidationQuestion(@RequestHeader("token") String token){
+
+        JwtPayload payload = JwtValidation.validateJWTToken(token);
+        VU360User lmsVu360User = vu360UserRepository.findUserByUserName(payload.getUser_name());
+        Learner learner = lmsVu360User.getLearner();
+        Authentication auth = lmsAuthenticationService.authenticateUser(payload.getUser_name());
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        LinkedHashMap<Object,Object> mpValidationQuestion = new LinkedHashMap<>();
+        boolean[] hasValidationQuestion = {false};
+
+        learnerService.setIdentityValidationQuestions(learner.getId(), mpValidationQuestion, hasValidationQuestion);
+
+        learnerService.getLearnerValidationQuestions(learner.getId());
+
+        LinkedHashMap<String, Object> validationQuestionsData = new LinkedHashMap<>();
+        validationQuestionsData.put("uniqueValidationData", mpValidationQuestion);
+        validationQuestionsData.put("hasValidationQuestion", hasValidationQuestion);
+        return validationQuestionsData;
     }
 }

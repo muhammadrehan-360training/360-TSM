@@ -1,11 +1,13 @@
 package com.softech.vu360.lms.rest.model;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class LearnerProfile {
 	
 	private PersonalInformation personalInformation;
 	private List<ValidationQuestionSet> validationQuestions;
+	private LinkedHashMap uniqueValidationQuestions;
 	private List<LearnerCreditReportingField> customFields;
 	private List<LearnerCreditReportingField> reportingFields;
 
@@ -22,6 +24,15 @@ public class LearnerProfile {
 			List<ValidationQuestionSet> validationQuestions) {
 		this.validationQuestions = validationQuestions;
 	}
+
+	public LinkedHashMap getUniqueValidationQuestions() {
+		return uniqueValidationQuestions;
+	}
+
+	public void setUniqueValidationQuestions(LinkedHashMap uniqueValidationQuestions) {
+		this.uniqueValidationQuestions = uniqueValidationQuestions;
+	}
+
 	public List<LearnerCreditReportingField> getCustomFields() {
 		return customFields;
 	}
