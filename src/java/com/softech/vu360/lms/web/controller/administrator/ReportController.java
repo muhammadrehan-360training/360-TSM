@@ -431,9 +431,8 @@ public class ReportController extends VU360BaseMultiActionController{
 
                 if (form.getCurrentReport() != null) {
                     customFitlers = setAndgetCustomerReportFilter(form, report, distributor.getId());
-                    form.getCurrentReport().setFilters(null);
-                    form.getCurrentReport().setFilters(reportingConfigurationService.getVU360ReportFilter(form.getCurrentReport()));
-                    form.getCurrentReport().getFilters().addAll(customFitlers);
+                    customFitlers.addAll(reportingConfigurationService.getVU360ReportFilter(form.getCurrentReport()));
+                    form.getCurrentReport().setFilters(customFitlers);
                     report.getFilters().addAll(form.getCurrentReport().getFilters());
                 }
             }
@@ -717,6 +716,7 @@ public class ReportController extends VU360BaseMultiActionController{
 		ReportForm form = (ReportForm)command;
 		VU360Report curr_report = form.getCurrentReport();
                 curr_report = reportingConfigurationService.getReportCopy(curr_report.getId());
+                form.getCurrentReport().setFields(curr_report.getFields());
 		if(curr_report==null)
 			throw new Exception("current report not selected");
 		

@@ -1,10 +1,7 @@
 package com.softech.vu360.lms.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,8 +15,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 /**
  *
@@ -78,20 +73,17 @@ public class VU360Report implements SearchableKey {
     @Column(name = "SYSTEMOWNEDREPORTTF")
     private Boolean systemOwned = false;
 
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true, mappedBy = "report")
+    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "report")
     private List<VU360ReportExecutionSummary> executionSummaries = null;
 
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true, mappedBy = "vu360report")
-    private Set<VU360ReportField> fields = new LinkedHashSet<>();
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "vu360report")
+    private List<VU360ReportField> fields = new ArrayList();
 
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "report")
-    private Set<VU360ReportFilter> filters = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "report", cascade = {CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+    private List<VU360ReportFilter> filters = new ArrayList();
 
     @Transient
-    private Set<VU360ReportParameter> parameter = new LinkedHashSet<>();
+    private List<VU360ReportParameter> Parameter = new ArrayList();
 
     /**
      * @return the category
@@ -252,28 +244,28 @@ public class VU360Report implements SearchableKey {
      * @return the fields
      */
     public List<VU360ReportField> getFields() {
-        return new ArrayList<>(fields);
+        return fields;
     }
 
     /**
      * @param fields the fields to set
      */
     public void setFields(List<VU360ReportField> fields) {
-        this.fields = fields == null ? null : new HashSet<>(fields);
+        this.fields = fields;
     }
 
     /**
      * @return the filters
      */
     public List<VU360ReportFilter> getFilters() {
-        return new ArrayList<>(filters);
+        return filters;
     }
 
     /**
      * @param filters the filters to set
      */
     public void setFilters(List<VU360ReportFilter> filters) {
-        this.filters = filters == null ? null : new HashSet<>(filters);
+        this.filters = filters;
     }
 
     /**
@@ -308,11 +300,11 @@ public class VU360Report implements SearchableKey {
     }
 
     public List<VU360ReportParameter> getParameter() {
-        return new ArrayList<>(parameter);
+        return Parameter;
     }
 
     public void setParameter(List<VU360ReportParameter> parameter) {
-        this.parameter = new HashSet<>(parameter);
+        Parameter = parameter;
     }
 
 }
