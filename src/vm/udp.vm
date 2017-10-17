@@ -1,4 +1,8 @@
 #set($ssn = $!{request.getSession(true)})
+#set($isAdminSwitch = "")
+#if($!{ssn.getAttribute("isAdminSwitch")})
+    #set($isAdminSwitch = $ssn.getAttribute("isAdminSwitch"))
+#end
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
@@ -23,7 +27,7 @@
 
                     } else {
                         //Browser has blocked it
-                        alert('Please allow popups for this website');
+                        alert('Please allow popups for this website and try again.');
                         $(location).attr('href', "/lms/switchexituser.do");
                     }
                 } else {
@@ -35,7 +39,7 @@
     <body>
         <a id="loading">Please wait</a>
         <form id="udp" method="get" action="${udp}">
-            <input id="isAdminSwitch" type="hidden" value='$ssn.getAttribute("isAdminSwitch")'/>
+            <input id="isAdminSwitch" type="hidden" value="${isAdminSwitch}"/>
         </form>
     </body>
 </html>
