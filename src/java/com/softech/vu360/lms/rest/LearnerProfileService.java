@@ -354,6 +354,8 @@ public class LearnerProfileService {
     private Map getUniqueValidationQuestionList(Map<String , Object> udpValidationQuestions){
         Map<String, Object> lmsValidationQuestions = new LinkedHashMap<>();
 
+        if(udpValidationQuestions!=null) {
+
             Iterator<Map.Entry<String, Object>> iterator = udpValidationQuestions.entrySet().iterator();
             String key = null;
 
@@ -381,7 +383,7 @@ public class LearnerProfileService {
                     lmsValidationQuestions.put(key, lmsQuestionsList);
                 }
             }
-
+        }
         return lmsValidationQuestions;
     }
 
