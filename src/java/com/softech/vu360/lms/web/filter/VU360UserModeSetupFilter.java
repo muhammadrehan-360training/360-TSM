@@ -450,6 +450,7 @@ ApplicationEventPublisherAware, MessageSourceAware {
 							request.getSession().removeAttribute("_courseCatalog");
                                                         
                                                         com.softech.vu360.lms.vo.VU360User user = (com.softech.vu360.lms.vo.VU360User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                                                        boolean isUDP = Boolean.FALSE;
                                                         if (user.getLearner() != null
                                                                 && (user.getLearner().getCustomer() != null
                                                                 && user.getLearner().getCustomer().getCustomerType() != null
@@ -458,11 +459,11 @@ ApplicationEventPublisherAware, MessageSourceAware {
                                                                 && user.getLearner().getCustomer().getDistributor().isUdp()
                                                                 && !user.isManagerMode()) {
                                                             user.setPlainPassword("");
-                                                            this.managerSwitchTargetURL = "/udp.do";
+                                                            isUDP = Boolean.TRUE;
                                                         }
                                                         
 							//redirect to target url
-							sendRedirect(request, response, this.managerSwitchTargetURL);
+							sendRedirect(request, response, isUDP ? "/udp.do" : this.managerSwitchTargetURL);
 						} catch (Exception e) {
 							this.redirectToFailureUrl(request, response, this.managerSwitchFailureURL, e);
 						}
